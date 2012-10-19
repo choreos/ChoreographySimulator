@@ -1,0 +1,100 @@
+<?xml version='1.0'?>
+ <!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid.dtd">
+ <platform version="3">
+ <AS routing="Full" id="OpenCirrus">
+ <host power="6000" id="broker" core="4"></host><!-- power=6000bogomips -> need change to flops-->
+  <host power="6000" id="customer" core="4"></host>
+ <host power="6000" id="shipper" core="4"></host>
+ <host power="6000" id="supermarket1" core="4"></host>
+ <host power="6000" id="supermarket2" core="4"></host>
+ <host power="6000" id="supermarket3" core="4"></host>
+ <host power="6000" id="registry" core="4"></host>
+ 
+ <link bandwidth="117875000" latency="0.0000967" sharing_policy="SHARED" id="l1"></link><!-- bw in bytes/s and lt in seconds -->
+
+ <route src="broker" dst="shipper">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+<route src="broker" dst="supermarket1">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="broker" dst="supermarket2">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="broker" dst="supermarket3">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="shipper" dst="supermarket1">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="shipper" dst="supermarket2">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="shipper" dst="supermarket3">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="supermarket1" dst="supermarket2">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="supermarket1" dst="supermarket3">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="supermarket2" dst="supermarket3">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="registry" dst="broker">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="registry" dst="shipper">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="registry" dst="supermarket1">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="registry" dst="supermarket2">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="registry" dst="supermarket3">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="customer" dst="broker">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="customer" dst="shipper">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="customer" dst="supermarket1">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="customer" dst="supermarket2">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="customer" dst="supermarket3">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ <route src="customer" dst="registry">
+ 	<link_ctn id="l1"/>
+ </route>
+ 
+ </AS>
+</platform>

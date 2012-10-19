@@ -1,6 +1,25 @@
+/SimulationChoreography/bin/*
+/SimulationChoreography/.metadata
+/SimulationChoreography/.settings
+/SimulationChoreography/.classpath
+#*.project
 *.class
-
-# Package Files #
-*.jar
+#**/.classpath
+#**/*.jar
+**/*.class
+**/*.log
+#*.jar
+.DS_Store
+#.settings
+# One should use properties template
+*.properties
+*.orig
+*.log
 *.war
-*.ear
+/.metadata/
+.metadata/
+*CMakeFiles/
+*Makefile
+CMakeCache*.*
+cmake_install.*
+

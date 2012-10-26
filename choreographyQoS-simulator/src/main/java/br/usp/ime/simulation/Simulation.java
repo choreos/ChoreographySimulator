@@ -18,7 +18,8 @@ public class Simulation {
    
     public static void main(final String[] args) throws NativeException {
     String platform = "smallplatform.xml";
-    String deploymentFile = "smallOrchestrationDeployment.xml";
+    //String deploymentFile = "smallOrchestrationDeployment.xml";
+    String deploymentFile = "smallChoreographyDeployment.xml";
     
 	/* initialize the MSG simulation. Must be done before anything else (even logging). */
 	Msg.init(args);

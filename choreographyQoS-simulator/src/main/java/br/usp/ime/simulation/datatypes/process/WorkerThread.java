@@ -58,9 +58,11 @@ public class WorkerThread extends Process {
 			Task task = Task.receive(myMailbox);
 			if (ControlVariables.DEBUG
 					|| ControlVariables.PRINT_TASK_TRANSMISSION)
-				Msg.info("Received task from " + task.getSource().getName());
+				Msg.info("WorkerThread: Received task from " + task.getSource().getName());
 			if (task instanceof WsRequest) {
+				Msg.info("WorkerThread: task instanceof WsRequest, to execute " );
 				WsRequest wsRequest = (WsRequest) task;
+				
 				wsRequest.startTime = startTime;
 				executeMethod(wsRequest);
 			}
@@ -94,7 +96,12 @@ public class WorkerThread extends Process {
 	}
 
 	public WsMethod requestWsMethodTask(String wsMethodName) {
-		WsMethod method = methods.get(wsMethodName);
+		if (ControlVariables.DEBUG)
+			Msg.info("WorkerThread: requestWsMethodTask, retrieving the method: "+wsMethodName + " of "+this.methods.size()+" methods");
+		WsMethod method = methods.get(wsMethodName);//critic point
+		if(method== null && ControlVariables.DEBUG)
+			Msg.info("WorkerThread: requestWsMethodTask - method null!");
+		
 		WsMethod cloneMethod = new WsMethod(method.getName(),
 				method.getComputeDuration(), 0,
 				method.getOutputFileSizeInBytes());
@@ -106,6 +113,7 @@ public class WorkerThread extends Process {
 		WsMethod method = new WsMethod(name, Double.parseDouble(computeSize),
 				0, Double.parseDouble(outputFileSize));
 
+		Msg.info("WorkerThread: createMethod : "+name);
 		methods.put(name, method);
 	}
 

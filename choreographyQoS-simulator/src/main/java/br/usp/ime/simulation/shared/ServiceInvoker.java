@@ -3,6 +3,7 @@ package br.usp.ime.simulation.shared;
 import java.io.IOException;
 
 import org.simgrid.msg.Host;
+import org.simgrid.msg.HostNotFoundException;
 import org.simgrid.msg.Msg;
 import org.simgrid.msg.MsgException;
 import org.simgrid.msg.Process;
@@ -12,11 +13,11 @@ import br.usp.ime.simulation.datatypes.task.CoordinationMessage;
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
-import br.usp.ime.simulation.log.Log;
 
 public abstract class ServiceInvoker extends Process {
 
 	public ServiceInvoker(Host host, String name, String[]args) {
+		
 		super(host,name,args);
 	} 
 	
@@ -35,7 +36,7 @@ public abstract class ServiceInvoker extends Process {
 	}
 
 	protected void sendCoordinationMessage(CoordinationMessage message,
-			String sender, String destination) {
+			String sender, String destination) throws HostNotFoundException {
 
 		try {
 			sendTask(message, sender, destination, CoordinationMessage.toString(message));
@@ -46,7 +47,7 @@ public abstract class ServiceInvoker extends Process {
 	}
 
 	private void sendTask(Task request, String sender, String destination,
-			String serializedObject) {
+			String serializedObject) throws HostNotFoundException {
 
 		String serialization;
 
@@ -54,8 +55,12 @@ public abstract class ServiceInvoker extends Process {
 		String[] args = new String[2];
 		args[0] = serialization;
 		args[1] = destination;
-		new WsRequestSender(args, getHost());
-
+		if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS
+				|| ControlVariables.PRINT_TASK_TRANSMISSION)
+			Msg.info("Sending a WsRequestSender ");
+	
+		WsRequestSender rqs= new WsRequestSender(args, getHost());
+		rqs.start();
 	}
 
 	public abstract void notifyCompletion(WsRequest request,
@@ -70,7 +75,7 @@ public abstract class ServiceInvoker extends Process {
 			if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS
 					|| ControlVariables.PRINT_TASK_TRANSMISSION)
 				Msg.info("Task " + ((ResponseTask) response).serviceMethod
-						+ " for orchestration "
+						+ " for composition "
 						+ ((ResponseTask) response).instanceId
 						+ " was succesfully executed by "
 						+ ((ResponseTask) response).requestServed.destination);

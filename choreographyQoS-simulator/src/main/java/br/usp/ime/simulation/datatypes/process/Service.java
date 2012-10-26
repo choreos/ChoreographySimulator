@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.simgrid.msg.Host;
 import org.simgrid.msg.HostFailureException;
+import org.simgrid.msg.HostNotFoundException;
 import org.simgrid.msg.Msg;
 import org.simgrid.msg.MsgException;
 import org.simgrid.msg.Process;
@@ -17,6 +18,7 @@ import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
+import br.usp.ime.simulation.shared.ServiceRegistry;
 
 import commTime.FinalizeTask;
 
@@ -48,6 +50,7 @@ public class Service extends Process {
 		wsName = args[0];
 		mainArgs = args.clone();
 		myMailbox = "WS_" + wsName + "_at_" + getHost().getName();
+		ServiceRegistry.getInstance().putServiceMailbox(myMailbox);
 		workerMailboxes = new ArrayList<String>();
 
 		createWorkerThreads(Integer.parseInt(args[1]));
@@ -130,7 +133,7 @@ public class Service extends Process {
 
 	}
 
-	private void createWorkerThreads(int workerAmmount) {
+	private void createWorkerThreads(int workerAmmount) throws HostNotFoundException {
 		for (int workerId = 0; workerId < workerAmmount; workerId++) {
 			createsingleWorker(workerId);
 		}
@@ -138,11 +141,11 @@ public class Service extends Process {
 			Msg.info("Done creating worker threads.");
 	}
 
-	private void createsingleWorker(int workerThreadId) {
+	private void createsingleWorker(int workerThreadId) throws HostNotFoundException {
 		String[] arguments = mainArgs.clone();
 		arguments[1] = myMailbox + "_WORKER_THREAD_" + workerThreadId;
 		workerMailboxes.add(arguments[1]);
-		new WorkerThread(arguments, getHost());
+		(new WorkerThread(arguments, getHost())).start();
 	}
 
 	private void finalizeWorkers() {

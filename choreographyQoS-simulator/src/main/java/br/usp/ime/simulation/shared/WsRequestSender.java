@@ -33,11 +33,12 @@ public class WsRequestSender extends org.simgrid.msg.Process {
 
 		if (request instanceof WsRequest) {
 			WsRequest wsrequest = (WsRequest) request;
+			Msg.info("WsReqSend: wsRequestMethod: "+wsrequest.serviceMethod);
 			WsRequest clonerequest = cloneWsRequest(wsrequest, destination);
 			if (ControlVariables.DEBUG
 					|| ControlVariables.PRINT_TASK_TRANSMISSION)
-				Msg.info("Created Task for " + clonerequest.serviceMethod
-						+ " with compute duration of "
+				Msg.info("Created Task for  " + clonerequest.serviceMethod
+						+ " method, with compute duration of "
 						+ clonerequest.getComputeDuration()
 						+ " and message size of "
 						+ clonerequest.inputMessageSize + " at " + destination);
@@ -61,6 +62,7 @@ public class WsRequestSender extends org.simgrid.msg.Process {
 		clonerequest.instanceId = wsrequest.instanceId;
 		clonerequest.senderMailbox = wsrequest.senderMailbox;
 		clonerequest.destination = destination;
+		
 		return clonerequest;
 	}
 

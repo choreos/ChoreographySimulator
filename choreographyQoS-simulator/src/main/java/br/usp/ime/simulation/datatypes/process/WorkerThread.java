@@ -13,6 +13,7 @@ import org.simgrid.msg.TransferFailureException;
 
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsMethod;
+import br.usp.ime.simulation.datatypes.task.WsMethod.MessageInteractionType;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
 
@@ -24,6 +25,9 @@ public class WorkerThread extends Process {
 	private Host host;
 	private String wsName;
 	private String myMailbox;
+	private String myServiceMailbox;
+	
+	private HashMap<String, WsMethod>  outstandingExecutionMethods = new HashMap<String, WsMethod>();
 
 	public WorkerThread(String[] mainArgs, Host host) {
 		super(host, "WsRequestSender", mainArgs);
@@ -34,6 +38,7 @@ public class WorkerThread extends Process {
 		wsName = args[0];
 		myMailbox = args[1];
 		methods = new HashMap<String, WsMethod>();
+		this.myServiceMailbox= args[args.length-1];
 		// host = getHost();
 
 		createWebMethods(args);
@@ -46,7 +51,8 @@ public class WorkerThread extends Process {
 	}
 
 	private void createWebMethods(String[] args) {
-		for (int i = 2; i < args.length; i += 3) {
+		//for (int i = 2; i < args.length; i += 3) {
+		for (int i = 2; i < args.length-1; i += 3) {
 			createMethod(args[i], args[i + 1], args[i + 2]);
 		}
 	}
@@ -66,20 +72,49 @@ public class WorkerThread extends Process {
 				wsRequest.startTime = startTime;
 				executeMethod(wsRequest);
 			}
+			else if(task instanceof ResponseTask){
+				
+			}
 
-			if (task instanceof FinalizeTask)
+			else if (task instanceof FinalizeTask)
 				break;
 		}
 	}
 
 	public void executeMethod(WsRequest request) throws MsgException {
-		WsMethod method = requestWsMethodTask(request.serviceMethod);
-		method.execute();
-		if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
-			Msg.info("Task completed");
-		String responseMailbox = request.senderMailbox;
-		double outputFileSize = method.getOutputFileSizeInBytes();
-		sendResponseTask(request, responseMailbox, outputFileSize);
+		WsMethod currentMethod = requestWsMethodTask(request.serviceMethod);
+		
+		if(currentMethod.hasDependency()){
+			for (WsMethod dependentMethod : currentMethod.getDependencies().values()){
+				
+				WsRequest requestDependentTask = new WsRequest(dependentMethod.getServiceName(),
+						dependentMethod.getName(), dependentMethod.getInputFileSizeInBytes(),this.myMailbox);
+				if(!dependentMethod.wasExecuted())
+					redirectTask(requestDependentTask);//redirecting Task to Service
+				//is needed a waiting response?
+				//if( currentMethod.isSynchronous() ){
+				if( currentMethod.getMessageInteractionType()==MessageInteractionType.Request ){
+					currentMethod.execute();		
+					currentMethod.setWasExecuted(true);
+				}
+				else{
+					Msg.info("Waiting a response of dependent service ");
+					this.outstandingExecutionMethods.put(currentMethod.getName(),currentMethod);
+					
+				}
+				
+			}
+		}
+		else{
+			currentMethod.execute();
+			currentMethod.setWasExecuted(true);
+			if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
+				Msg.info("Task completed");
+			String responseMailbox = request.senderMailbox;
+			double outputFileSize = currentMethod.getOutputFileSizeInBytes();
+			sendResponseTask(request, responseMailbox, outputFileSize);//currently send directly to a Service Invoker
+			//but should be to send to a Service, and frome there to send to a ServiceInvoker
+		}
 	}
 
 	private void sendResponseTask(WsRequest request, String responseMailbox,
@@ -108,6 +143,14 @@ public class WorkerThread extends Process {
 		return cloneMethod;
 	}
 
+	private void redirectTask(Task task)
+			throws TransferFailureException, HostFailureException,
+			TimeoutException {
+		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
+			Msg.info("WorkerThread: Redirecting to service " + myServiceMailbox);
+		task.send(myServiceMailbox);
+
+	}
 	private void createMethod(String name, String computeSize,
 			String outputFileSize) {
 		WsMethod method = new WsMethod(name, Double.parseDouble(computeSize),

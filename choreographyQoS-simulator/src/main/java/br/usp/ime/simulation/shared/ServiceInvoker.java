@@ -3,11 +3,13 @@ package br.usp.ime.simulation.shared;
 import java.io.IOException;
 
 import org.simgrid.msg.Host;
+import org.simgrid.msg.HostFailureException;
 import org.simgrid.msg.HostNotFoundException;
 import org.simgrid.msg.Msg;
 import org.simgrid.msg.MsgException;
 import org.simgrid.msg.Process;
 import org.simgrid.msg.Task;
+import org.simgrid.msg.TransferFailureException;
 
 import br.usp.ime.simulation.datatypes.task.CoordinationMessage;
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
@@ -36,7 +38,7 @@ public abstract class ServiceInvoker extends Process {
 	}
 
 	protected void sendCoordinationMessage(CoordinationMessage message,
-			String sender, String destination) throws HostNotFoundException {
+			String sender, String destination) throws TransferFailureException, HostFailureException, MsgException {
 
 		try {
 			sendTask(message, sender, destination, CoordinationMessage.toString(message));
@@ -47,7 +49,7 @@ public abstract class ServiceInvoker extends Process {
 	}
 
 	private void sendTask(Task request, String sender, String destination,
-			String serializedObject) throws HostNotFoundException {
+			String serializedObject) throws TransferFailureException, HostFailureException, MsgException {
 
 		String serialization;
 
@@ -61,6 +63,7 @@ public abstract class ServiceInvoker extends Process {
 	
 		WsRequestSender rqs= new WsRequestSender(args, getHost());
 		rqs.start();
+		
 	}
 
 	public abstract void notifyCompletion(WsRequest request,

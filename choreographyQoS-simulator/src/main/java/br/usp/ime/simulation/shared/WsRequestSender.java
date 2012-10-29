@@ -16,13 +16,15 @@ import commTime.FinalizeTask;
 public class WsRequestSender extends org.simgrid.msg.Process {
 
 	public WsRequest request;
+	//private String name="";
 
 	public WsRequestSender(String[] args, Host host) {
 		super(host, "WsRequestSender", args);
+		//this.name = "WsRequestSender";
 	}
 
 	@Override
-	public void main(String[] args) throws MsgException {
+	public void main(String[] args) throws MsgException, TransferFailureException, HostFailureException {
 		String destination = args[1];
 		Task request = null;
 		try {

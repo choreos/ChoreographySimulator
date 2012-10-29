@@ -1,7 +1,9 @@
 package br.usp.ime.simulation.shared;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ServiceRegistry {
 	
@@ -15,6 +17,7 @@ public class ServiceRegistry {
 	   }
 	
 	public List<String> serviceMailboxes = new ArrayList<String>();
+	public Map<String, String> serviceMailboxesMap = new HashMap<String, String>();
 	
 	public void reset(){
 		serviceMailboxes = new ArrayList<String>();

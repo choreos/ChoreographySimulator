@@ -14,7 +14,7 @@
    <route src="Jacquelin" dst="iRMX" symmetrical="NO">
        <link_ctn id="100"/>
    </route>
-   <route src="Jacquelin" dst="Revoada" symmetrical="NO">
+   <route src="Jacquelin" dst="Revoada" symmetrical="YES">
        <link_ctn id="100"/>
    </route>
    <route src="Jacquelin" dst="Bellemarre" symmetrical="NO">

@@ -18,17 +18,20 @@ import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
+import br.usp.ime.simulation.shared.ServiceInvoker;
 import br.usp.ime.simulation.shared.ServiceRegistry;
 
 import commTime.FinalizeTask;
 
-public class Service extends Process {
+//public class Service extends Process {
+public class Service extends ServiceInvoker {
 
 	private HashMap<String, WsMethod> methods = new HashMap<String, WsMethod>();
 	private Host host;
 	private String wsName;
 	private List<String> workerMailboxes;
 	private String[] mainArgs;
+	//private List<String> mainArgs;
 	private String myMailbox;
 	private boolean ended = false;
 
@@ -42,15 +45,19 @@ public class Service extends Process {
 			System.exit(1);
 		}
 
+		//if (((args.length - 2) % 3) != 0) {
 		if (((args.length - 2) % 3) != 0) {
 			Msg.info("Each method must have 4 parameters: a name, computing size and output file size");
 			System.exit(1);
 		}
 
 		wsName = args[0];
+		mainArgs = new String[args.length+1];
 		mainArgs = args.clone();
+		mainArgs[args.length]= myMailbox;
+		
 		myMailbox = "WS_" + wsName + "_at_" + getHost().getName();
-		ServiceRegistry.getInstance().putServiceMailbox(myMailbox);
+		ServiceRegistry.getInstance().putServiceMailbox(myMailbox);//service registring 
 		workerMailboxes = new ArrayList<String>();
 
 		createWorkerThreads(Integer.parseInt(args[1]));
@@ -94,7 +101,10 @@ public class Service extends Process {
 		if (currentTask instanceof WsRequest) {
 			redirectTask(currentTask, mailbox);
 		}
-		if (currentTask instanceof FinalizeTask) {
+		else if (currentTask instanceof ResponseTask) {
+			//TODO: redirect to respective worker to complete the initial request
+		}
+		else if (currentTask instanceof FinalizeTask) {
 			if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
 				Msg.info("Received Finalize. So this is WS_" + wsName + "_at_"
 						+ getHost().getName() + " saying Goodbye!");
@@ -156,5 +166,12 @@ public class Service extends Process {
 				Msg.info("Could not finalize worker thread at " + mailbox);
 			}
 		}
+	}
+
+	@Override
+	public void notifyCompletion(WsRequest request, ResponseTask response)
+			throws MsgException {
+		// TODO Auto-generated method stub
+		
 	}
 }

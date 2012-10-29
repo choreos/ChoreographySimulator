@@ -53,11 +53,12 @@
 		<!-- <argument value="1000" />   Amount of choreography requests (instances) -->
 		<argument value="0" />   <!-- Requests per second -->
 
-		<argument value="supermarket" />   <!-- name of service to invoke-->
-		<argument value="getPrice"/><!-- name of method of service -->
+		<argument value="registry" />   <!-- name of service to invoke-->
+		<argument value="getList"/><!-- name of method of service -->
 		<argument value="100"/><!-- message input size -->
 		<!--<argument value="10" />    Size of each returned value -->
 		<!--<argument value="1" />     Amount of orchestrated service providers -->
+		<argument value="Revoada"/><!-- message input size -->
 	</process>
 
 </platform>

@@ -41,8 +41,8 @@ public class Choreographer extends ServiceInvoker {
 
 	@Override
 	public void main(String[] args) throws MsgException {
-		if (args.length != 4) {
-			Msg.info("The choreographer must receive 1 input: request per sec rate");
+		if (args.length != 5) {
+			Msg.info("The choreographer must receive 5 input: request per sec rate");
 			System.exit(1);
 		}
 
@@ -54,7 +54,7 @@ public class Choreographer extends ServiceInvoker {
 		this.entryServiceName = args[1];
 		this.entryServiceNameMethod= args[2];
 		this.inputMessageSize = Double.valueOf(args[3]);
-		String entryHost= "Bellemarre" ;//Host.getByName("...") 
+		String entryHost= args[4] ;//Host.getByName("...") 
 		
 		this.entryMailbox = "WS_" + entryServiceName + "_at_" + entryHost;
 
@@ -118,6 +118,7 @@ public class Choreographer extends ServiceInvoker {
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
 			Msg.info("Choreography is done. Bye!");
 
+		ServiceRegistry.getInstance().reset();
 		this.log.close();
 	}
 	

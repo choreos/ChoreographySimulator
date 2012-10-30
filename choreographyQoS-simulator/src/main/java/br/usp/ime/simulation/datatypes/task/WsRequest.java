@@ -28,10 +28,11 @@ public class WsRequest extends Task implements Serializable{
 	public String serviceMethod;
 	public double inputMessageSize;
 	public boolean done = false;
-	public int instanceId = -1;
+	//public int instanceId = -1;
+	public int id = -1;
 	public String destination;
 	public double startTime;
-	private int id;
+	private Long compositionId=null;
 	
 
 	public int getId() {
@@ -115,4 +116,12 @@ public class WsRequest extends Task implements Serializable{
         oos.close();
         return new String( Base64Coder.encode( baos.toByteArray() ) );
     }
+
+	public Long getCompositionId() {
+		return compositionId;
+	}
+
+	public void setCompositionId(Long compositionId) {
+		this.compositionId = compositionId;
+	}
 }

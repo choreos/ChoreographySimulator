@@ -34,6 +34,7 @@ public class Service extends ServiceInvoker {
 	//private List<String> mainArgs;
 	private String myMailbox;
 	private boolean ended = false;
+	private int lastUsedMailboxIndex=0;
 
 	public Service(Host host, String name, String[]args) {
 		super(host,name,args);
@@ -71,17 +72,13 @@ public class Service extends ServiceInvoker {
 	}
 
 	private void redirectTasks() {
-		int i = 0;
+		//int i = 0;
 		Task currentTask;
 		while (true) {
 			try {
 				double startTime = Msg.getClock();
 				currentTask = receiveNewTask();
-				String mailbox = getNextMailbox(i);
-				if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
-					Msg.info("Task received at service " + wsName
-							+ ". Redirecting to " + mailbox);
-				processTask(mailbox, currentTask);
+				processTask( currentTask);
 			} catch (TransferFailureException e) {
 				e.printStackTrace();
 			} catch (HostFailureException e) {
@@ -89,20 +86,27 @@ public class Service extends ServiceInvoker {
 			} catch (TimeoutException e) {
 				e.printStackTrace();
 			}
-			i++;
 			if (ended)
 				break;
 		}
 	}
 
-	private void processTask(String mailbox, Task currentTask)
+	private void processTask(Task currentTask)
 			throws TransferFailureException, HostFailureException,
 			TimeoutException {
 		if (currentTask instanceof WsRequest) {
+			String mailbox = getNextMailbox();
+			if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
+				Msg.info("Request Task received at service " + wsName
+						+ ". Redirecting to " + mailbox);
 			redirectTask(currentTask, mailbox);
 		}
 		else if (currentTask instanceof ResponseTask) {
 			//TODO: redirect to respective worker to complete the initial request
+			String initialRequesterMailbox = ((ResponseTask) currentTask).getInitialSender();
+			Msg.info("Response Task received at service " + wsName
+					+ ". Redirecting to " + initialRequesterMailbox+ " to complete execution");
+			redirectTask(currentTask, initialRequesterMailbox);
 		}
 		else if (currentTask instanceof FinalizeTask) {
 			if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
@@ -114,14 +118,15 @@ public class Service extends ServiceInvoker {
 		}
 	}
 
-	private String getNextMailbox(int lastUsedMailboxIndex) {
+	//private String getNextMailbox(int lastUsedMailboxIndex) {
+	private String getNextMailbox() {
 		int j;
-		if (lastUsedMailboxIndex >= workerMailboxes.size())
-			j = 0;
+		if (this.lastUsedMailboxIndex >= workerMailboxes.size())
+			lastUsedMailboxIndex = 0;
 		else
-			j = lastUsedMailboxIndex;
+			lastUsedMailboxIndex++;
 
-		String mailbox = workerMailboxes.get(j);
+		String mailbox = workerMailboxes.get(lastUsedMailboxIndex);
 
 		return mailbox;
 	}

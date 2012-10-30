@@ -10,12 +10,12 @@ import org.simgrid.msg.Msg;
 
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 
-public class ManagerRequest {
+public class ManagerRequestOrch {
 	private List<WsRequest> requests;
-	private Map<WsRequest, ArrayList<WsRequest>> dependsOn;
-	private Map<WsRequest, ArrayList<WsRequest>> isDependencyOf;
+	private Map<WsRequest, ArrayList<WsRequest>> dependsOn;//depende de
+	private Map<WsRequest, ArrayList<WsRequest>> isDependencyOf;//é dependencia de
 
-	public ManagerRequest() {
+	public ManagerRequestOrch() {
 		dependsOn = new HashMap<WsRequest, ArrayList<WsRequest>>();
 		isDependencyOf = new HashMap<WsRequest, ArrayList<WsRequest>>();
 		requests = new ArrayList<WsRequest>();
@@ -65,8 +65,9 @@ public class ManagerRequest {
 			}
 		}
 	}
+	
 	public void notifyTaskConclusion(WsRequest request) {
-			if (isDependencyOf.get(request) != null) {
+		if (isDependencyOf.get(request) != null) {
 			doneWsRequest(request,isDependencyOf.keySet());
 			for (WsRequest dependency : isDependencyOf.get(request)) {
 				removeThisRequestsDependencyOn(request, dependency);

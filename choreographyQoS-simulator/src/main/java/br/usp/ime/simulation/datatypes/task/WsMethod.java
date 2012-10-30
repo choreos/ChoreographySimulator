@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.simgrid.msg.Task;
 
+import br.usp.ime.simulation.choreography.model.ChoreographyModel.MessageInteractionType;
+
 public class WsMethod extends Task {
 
 	private int computingSizeInMI;
@@ -12,29 +14,31 @@ public class WsMethod extends Task {
 	private double outputFileSizeInBytes;
 	private String wsMethodName;
 	private String serviceName;
-	private Map<String, WsMethod> dependencies;
+	private Map<String, WsMethod> dependencies;//key : serviceName
 	
 	//private Map<String, WsMethod> executedDependencies;
 	private boolean isSynchronous;
-	private boolean wasExecuted;
 	
-	public enum MessageInteractionType{ 
-		Request, Request_Response, Response;
-	}
-	private Map<String, MessageInteractionType> MITypesDependencies;
 	
-	private MessageInteractionType messageInteractionType;
 	
-	public WsMethod(String wsMethodName, double averageComputeDuration, double inputFileSize, double outputFileSize) {
+	//private GatewayType gateway;
+	//private Map<MessageInteractionType, String> miTypesDependencies;
+	
+	//private MessageInteractionType messageInteractionType;
+	
+	public WsMethod(String serviceName, String wsMethodName, double averageComputeDuration, double inputFileSize, double outputFileSize) {
 		super(wsMethodName, averageComputeDuration, (inputFileSize + outputFileSize));
-		this.inputFileSizeInBytes =  inputFileSize;
-		this.outputFileSizeInBytes = outputFileSize;
-		this.wsMethodName = wsMethodName;
-		this.setSynchronous(true);
-		
-		dependencies = new HashMap<String, WsMethod>();
+			this.inputFileSizeInBytes =  inputFileSize;
+			this.outputFileSizeInBytes = outputFileSize;
+			this.wsMethodName = wsMethodName;
+			this.serviceName = serviceName;
+			this.setSynchronous(true);
+			
+			this.dependencies = new HashMap<String, WsMethod>();
+		//this.miTypesDependencies = new HashMap<String, WsMethod.MessageInteractionType>();
 	}
 
+	
 	public boolean hasDependency(){
 		return (this.dependencies != null && !dependencies.isEmpty());
 	}
@@ -43,6 +47,8 @@ public class WsMethod extends Task {
 		this.dependencies.put(service, Method);
 	}
 	
+	
+
 	public int getComputingSizeInMI() {
 		return computingSizeInMI;
 	}
@@ -83,20 +89,6 @@ public class WsMethod extends Task {
 		this.isSynchronous = isSynchronous;
 	}
 
-	public MessageInteractionType getMessageInteractionType() {
-		return messageInteractionType;
-	}
-
-	public void setMessageInteractionType(MessageInteractionType messageInteractionType) {
-		this.messageInteractionType = messageInteractionType;
-	}
-
-	public boolean wasExecuted() {
-		return wasExecuted;
-	}
-
-	public void setWasExecuted(boolean wasExecuted) {
-		this.wasExecuted = wasExecuted;
-	}	
-
+	
+	
 }

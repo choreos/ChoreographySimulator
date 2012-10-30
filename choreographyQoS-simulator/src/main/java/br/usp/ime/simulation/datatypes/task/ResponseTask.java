@@ -6,6 +6,7 @@ import org.simgrid.msg.Task;
 public class ResponseTask extends Task {
 
 	public int instanceId;
+	//private Long compositionId;
 	public String serviceName;
 	public String serviceMethod;
 	public WsRequest requestServed;
@@ -13,4 +14,11 @@ public class ResponseTask extends Task {
 	public ResponseTask(double outputFileSize) {
 		super("", 0, outputFileSize);
 	}
+	
+	public String getInitialSender(){
+		return requestServed.senderMailbox;
+	}
+
+	
 }
+

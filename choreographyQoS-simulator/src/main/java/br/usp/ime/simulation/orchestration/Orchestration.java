@@ -9,14 +9,14 @@ import org.simgrid.msg.Msg;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 
 public class Orchestration {
-	private ManagerRequest managerRequest;
+	private ManagerRequestOrch managerRequest;
 	private ManagerServiceList managerServiceList;
 
 	private final int id;
 
 	public Orchestration(int id) {
 		managerServiceList = new ManagerServiceList();
-		managerRequest = new ManagerRequest();
+		managerRequest = new ManagerRequestOrch();
 		this.id = id;
 	}
 	
@@ -25,7 +25,7 @@ public class Orchestration {
 	}
 
 	public void addRequest(final WsRequest request){
-		request.instanceId = this.id;
+		request.id = this.id;
 		request.senderMailbox = "Orchestrator";
 		managerRequest.addRequest(request);
 	}
@@ -42,13 +42,13 @@ public class Orchestration {
 
 	public void parseBpelFileSmallOrchestration() {
 		WsRequest ws1 = new WsRequest("supermarket", "getPrice", 30000, null);
-		ws1.instanceId = this.id;
+		ws1.id = this.id;
 		ws1.senderMailbox = "Orchestrator";
 
 		addRequest(ws1);
 		
 		WsRequest ws2 = new WsRequest("supermarket", "purchase", 50000, null);
-		ws2.instanceId = this.id;
+		ws2.id = this.id;
 		ws2.senderMailbox = "Orchestrator";
 
 		addRequest(ws2);

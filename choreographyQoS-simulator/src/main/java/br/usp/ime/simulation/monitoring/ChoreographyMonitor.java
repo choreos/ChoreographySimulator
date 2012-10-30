@@ -1,18 +1,31 @@
 package br.usp.ime.simulation.monitoring;
 
-import org.simgrid.msg.Host;
-import org.simgrid.msg.MsgException;
-import org.simgrid.msg.Process;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ChoreographyMonitor extends Process{
+import br.usp.ime.simulation.choreography.ChoreographyInstance;
 
-	public ChoreographyMonitor(Host host, String name, String[]args) {
-		super(host,name,args);
-	} 
-	@Override
-	public void main(String[] arg0) throws MsgException {
-		// TODO Auto-generated method stub
-		
+
+public class ChoreographyMonitor {//extends Process{
+
+	private static Map<Long, ChoreographyInstance> choreographyInstances = new HashMap<Long, ChoreographyInstance>();
+	private static Long nextChoreographyId=0L;
+	
+	public  static void addChoreographyInstance(ChoreographyInstance instance){
+		choreographyInstances.put(instance.getCompositionId(), instance);
 	}
 	
+	public static  ChoreographyInstance nextChoreographyInstance(){
+		ChoreographyInstance instance = new ChoreographyInstance();
+		instance.setCompositionId(nextChoreographyId());
+		return instance;
+	}
+	
+	public static ChoreographyInstance findChoreographyInstance(Long id){
+		return choreographyInstances.get(id);
+	}
+	
+	private static Long nextChoreographyId(){
+		return nextChoreographyId++;
+	}
 }

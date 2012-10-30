@@ -11,6 +11,7 @@ import org.simgrid.msg.Process;
 import org.simgrid.msg.Task;
 import org.simgrid.msg.TransferFailureException;
 
+import br.usp.ime.simulation.choreography.ManagerRequest;
 import br.usp.ime.simulation.datatypes.task.CoordinationMessage;
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsRequest;

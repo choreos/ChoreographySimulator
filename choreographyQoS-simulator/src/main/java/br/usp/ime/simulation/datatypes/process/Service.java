@@ -41,27 +41,35 @@ public class Service extends ServiceInvoker {
 	} 
 
 	public void main(String[] args) throws MsgException {
-		if (args.length < 5) {
-			Msg.info("Each service must have a name, an ammount of parallel threads and at least one method");
+		if (args.length < 6) {
+			Msg.info("Each service must have a name, an ammount of parallel threads and at least one method description");
 			System.exit(1);
 		}
 
-		//if (((args.length - 2) % 3) != 0) {
-		if (((args.length - 2) % 3) != 0) {
+		
+		/*if (((args.length - 2) % 3) != 0) {
 			Msg.info("Each method must have 4 parameters: a name, computing size and output file size");
 			System.exit(1);
-		}
+		}*/
 
-		wsName = args[0];
-		mainArgs = new String[args.length+1];
+		//there will be no verifying of args
+		
+		
+		int workersNumber = Integer.parseInt(args[0]);
+		this.wsName = args[1];
+		
+		mainArgs = new String[args.length+2];
 		mainArgs = args.clone();
 		mainArgs[args.length]= myMailbox;
+		mainArgs[args.length+1]= "END";
 		
 		myMailbox = "WS_" + wsName + "_at_" + getHost().getName();
-		ServiceRegistry.getInstance().putServiceMailbox(myMailbox);//service registring 
+		ServiceRegistry.getInstance().putServiceMailbox(myMailbox);//service registring
+		ServiceRegistry.getInstance().putServiceAndServiceMailbox(wsName, myMailbox);
+		
 		workerMailboxes = new ArrayList<String>();
 
-		createWorkerThreads(Integer.parseInt(args[1]));
+		createWorkerThreads(workersNumber);
 
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
 			Msg.info("Receiving on '" + myMailbox + "' from Service '" + wsName
@@ -158,8 +166,8 @@ public class Service extends ServiceInvoker {
 
 	private void createsingleWorker(int workerThreadId) throws HostNotFoundException {
 		String[] arguments = mainArgs.clone();
-		arguments[1] = myMailbox + "_WORKER_THREAD_" + workerThreadId;
-		workerMailboxes.add(arguments[1]);
+		arguments[0] = myMailbox + "_WORKER_THREAD_" + workerThreadId;
+		workerMailboxes.add(arguments[0]);
 		(new WorkerThread(arguments, getHost())).start();
 	}
 

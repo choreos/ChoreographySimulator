@@ -23,9 +23,11 @@ public class Service{
 	private static int nextId(){
 		return nextId++;
 	}
-	public String getId() {
+	
+	public String getId() {	
 		return id.toString()+"_"+this.name;
 	}
+	//public Integer getId(){		return this.id; 	}
 	
 	public void addServiceOperation(ServiceOperation so){
 		//this.serviceOperations.add(so);

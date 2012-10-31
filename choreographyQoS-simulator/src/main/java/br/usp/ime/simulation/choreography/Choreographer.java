@@ -17,6 +17,7 @@ import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
 import br.usp.ime.simulation.log.Log;
+import br.usp.ime.simulation.monitoring.ChoreographyMonitor;
 import br.usp.ime.simulation.orchestration.Orchestration;
 import br.usp.ime.simulation.shared.ServiceInvoker;
 import br.usp.ime.simulation.shared.ServiceRegistry;
@@ -27,6 +28,7 @@ public class Choreographer extends ServiceInvoker {
 	private String myMailbox = "choreographer";
 	private Integer throughput;
 	private Double inputMessageSize;
+	private Double outputMessageSize;
 	private String entryMailbox="";
 	private String entryServiceName="";
 	private String entryServiceNameMethod="";
@@ -48,15 +50,27 @@ public class Choreographer extends ServiceInvoker {
 
 		this.log.open();
 		ControlVariables.DEBUG =true; ControlVariables.PRINT_ALERTS=true; 
-			
+
+
+		ChoreographyParser parser= new ChoreographyParser("smallChoreographySpecification.xml");
+		parser.generateChoreographyModel();
+		
+		int numberOfInstances=1;
 		this.throughput = Integer.valueOf(args[0]);
 		
 		this.entryServiceName = args[1];
 		this.entryServiceNameMethod= args[2];
 		this.inputMessageSize = Double.valueOf(args[3]);
-		String entryHost= args[4] ;//Host.getByName("...") 
+		this.outputMessageSize = Double.valueOf(args[4]);
+		//computeSize?
+		//String entryHost= args[4] ;//Host.getByName("...") 
 		
-		this.entryMailbox = "WS_" + entryServiceName + "_at_" + entryHost;
+		try {
+			this.entryMailbox =   findServiceMailbox(this.entryServiceName);//"WS_" + entryServiceName + "_at_" + entryHost;
+		} catch (InterruptedException e) {
+			System.out.println("entryMailbox of entry service failed!");
+			e.printStackTrace();
+		}  
 
 				
 		//if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
@@ -65,7 +79,14 @@ public class Choreographer extends ServiceInvoker {
 			this.enact();
 	}
 
+	private String findServiceMailbox(String entryServiceName) throws InterruptedException {
+		wait(1000);
+		String mailbox= ServiceRegistry.getInstance().findServiceMailBoxByServiceName(entryServiceName);
+		return mailbox;
+	}
+
 	private void enact() throws MsgException {
+		
 		initRequests();
 			
 			ResponseTask response = (ResponseTask) getResponse(myMailbox);
@@ -84,9 +105,11 @@ public class Choreographer extends ServiceInvoker {
 	}
 
 	private void initRequests() throws MsgException {
+		ChoreographyInstance chorInstance = ChoreographyMonitor.nextChoreographyInstance();
 		Msg.info("initRequest ");
 		WsRequest requestTask = new WsRequest(this.entryServiceName, this.entryServiceNameMethod 
 												,this.inputMessageSize ,this.myMailbox);
+		requestTask.setCompositionId(chorInstance.getCompositionId());
 		invokeWsMethod(requestTask, myMailbox, entryMailbox);
 		
 	}

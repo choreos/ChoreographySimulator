@@ -65,6 +65,7 @@ public class WsRequestSender extends org.simgrid.msg.Process {
 		clonerequest.id = wsrequest.id;
 		clonerequest.senderMailbox = wsrequest.senderMailbox;
 		clonerequest.destination = destination;
+		clonerequest.setCompositionId(wsrequest.getCompositionId());//correlationID
 		
 		return clonerequest;
 	}

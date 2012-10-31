@@ -47,14 +47,15 @@ public class WorkerThread extends Process {
 
 	@Override
 	public void main(String[] args) throws MsgException {
-		wsName = args[0];
-		myMailbox = args[1];
+		wsName = args[1];
+		myMailbox = args[0];
 		methods = new HashMap<String, WsMethod>();
 		
 		this.myServiceMailbox= args[args.length-1];
 		// host = getHost();
 
 		createWebMethods(args);
+		
 
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
 			Msg.info("Receiving on '" + myMailbox + "'");
@@ -65,9 +66,32 @@ public class WorkerThread extends Process {
 
 	private void createWebMethods(String[] args) {
 		//for (int i = 2; i < args.length; i += 3) {
-		for (int i = 2; i < args.length-1; i += 3) {
-			createMethod(this.wsName, args[i], args[i + 1], args[i + 2]);
+		//for (int i = 2; i < args.length-1; i += 3) {
+			//createMethod(this.wsName, args[i], args[i + 1], args[i + 2]);
+		//}
+		
+		for (int i = 2; i < args.length-1; ) {
+			
+			if(args[i]!="method")
+				Msg.info("WorkerThread: Error parsing at method creating");
+			WsMethod currentMethod= createMethod(this.wsName, args[i+1], args[i + 2], args[i + 3]);
+			this.methods.put(currentMethod.getName(), currentMethod);
+			
+			i=i+4;
+			if(args[i]=="END")
+				break;
+			if(args[i]=="dependency"){//only a single dependency
+				WsMethod dependentMethod= createMethod(args[i+1], args[i + 2], args[i + 3], args[i + 4]);
+				currentMethod.addDependency(dependentMethod.getServiceName(), dependentMethod);
+				i=i+9;
+			}
+			else{
+				Msg.info("WorkerThread: Error parsing at method creating");
+			}
 		}
+			
+		
+		
 	}
 
 	private void workerThreadExecution() throws TransferFailureException,
@@ -202,6 +226,7 @@ public class WorkerThread extends Process {
 				dependentMethod.getName(), dependentMethod.getInputFileSizeInBytes(),this.myMailbox);
 		
 		ChoreographyInstance chorInstance= ChoreographyMonitor.findChoreographyInstance(currentRequest.getCompositionId());
+		requestDependentTask.setCompositionId(currentRequest.getCompositionId());
 		chorInstance.getManagerRequest().addRequest(requestDependentTask);
 		
 		
@@ -234,7 +259,7 @@ public class WorkerThread extends Process {
 		for (WsMethod dependentMethod : currentMethod.getDependencies().values()){
 			WsRequest requestDependentTask = new WsRequest(dependentMethod.getServiceName(),
 					dependentMethod.getName(), dependentMethod.getInputFileSizeInBytes(),this.myMailbox);
-
+			requestDependentTask.setCompositionId(currentRequest.getCompositionId());
 			//String serviceOperationKey= dependentMethod.getServiceName()+"_"+dependentMethod.getName();
 			//if( currentMethod.getMIType(serviceOperationKey)==MessageInteractionType.Request_Response ){
 			if(so.getMiTypeDependencies().get(dependentMethod.getName())==MessageInteractionType.Request_Response){
@@ -268,6 +293,7 @@ public class WorkerThread extends Process {
 		response.serviceName = wsName;
 		//response.instanceId = request.instanceId;
 		response.instanceId = request.getId();
+		//response.setCompositionId  ?
 		response.requestServed = request;
 		response.serviceMethod = request.serviceMethod;
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
@@ -297,14 +323,14 @@ public class WorkerThread extends Process {
 		task.send(myServiceMailbox);
 
 	}
-	private void createMethod(String serviceName, String name, String computeSize,
+	private WsMethod createMethod(String serviceName, String name, String computeSize,
 			String outputFileSize) {
 		WsMethod method = new WsMethod(serviceName,name, Double.parseDouble(computeSize),
 				0, Double.parseDouble(outputFileSize));
 		
 		//String serviceOperationKey= method.getServiceName()+"_"+method.getName();
 		Msg.info("WorkerThread: createMethod : "+name);
-		methods.put(name, method);
+		return method;
 	}
 	
 	

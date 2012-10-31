@@ -42,7 +42,7 @@ public class ChoreographyModel {
 	
 	
 	public static void addService(Service s){
-		roleServices.put(s.getId(), s);
+		roleServices.put(s.getName(), s);
 	}
 
 	

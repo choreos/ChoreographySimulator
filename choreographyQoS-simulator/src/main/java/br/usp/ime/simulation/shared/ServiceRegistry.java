@@ -17,7 +17,7 @@ public class ServiceRegistry {
 	   }
 	
 	public List<String> serviceMailboxes = new ArrayList<String>();
-	public Map<String, String> serviceMailboxesMap = new HashMap<String, String>();
+	public Map<String, String> serviceMailboxesMap = new HashMap<String, String>();//<serviceName,Mailboxes>
 	
 	public void reset(){
 		serviceMailboxes = new ArrayList<String>();
@@ -25,6 +25,14 @@ public class ServiceRegistry {
 	
 	public void putServiceMailbox(String smb){
 		serviceMailboxes.add(smb);
+	}
+	
+	public void putServiceAndServiceMailbox(String serviceName, String smb){
+		this.serviceMailboxesMap.put(serviceName, smb);
+	}
+	
+	public String findServiceMailBoxByServiceName(String serviceName){
+		return this.serviceMailboxesMap.get(serviceName);
 	}
 
 	public List<String> getServiceMailboxes() {

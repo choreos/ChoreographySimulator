@@ -1,49 +1,75 @@
 <?xml version='1.0'?>
 <!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid.dtd">
 <platform version="3">
-
+	
 	<process host="Bellemarre" function="br.usp.ime.simulation.datatypes.process.Service">
 
-		<argument value="supermarket" />  <!-- Service Name -->
-		<argument value="1"/> <!-- Ammount of workers -->
-		
-		<argument value="getPrice" />  <!-- Service Method Name -->
+	    <argument value="4"/><!-- number of threads-->
+	    <argument value="WS1"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
 		<argument value="3000" />  <!-- Output File Size -->
 
-		<argument value="sellProduct" />  <!-- Service Method Name -->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="WS3"/><!-- service name-->		
+			<argument value="method2"/><!-- operation name-->		
+			<argument value="3000" />  <!-- Method input size -->
+			<argument value="3000" />  <!-- Output File Size (only resquest_response)-->
+	
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
 		<argument value="3000" />  <!-- Output File Size -->
 
-		<argument value="purchase" />  <!-- Service Method Name -->
-		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+
 	</process>
 
 	<process host="iRMX" function="br.usp.ime.simulation.datatypes.process.Service">
 
-		<argument value="shipper" />  <!-- Service Name -->
-		<argument value="1"/> <!-- Ammount of workers -->
-
-		<argument value="setDelivery" />  <!-- Service Method Name -->
+	    <argument value="4"/><!-- number of threads-->
+	    <argument value="WS2"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
 		<argument value="3000" />  <!-- Output File Size -->
 
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="WS4"/><!-- service name-->		
+			<argument value="method3"/><!-- operation name-->		
+			<argument value="3000" />  <!-- Method input size -->
+			<argument value="3000" />  <!-- Output File Size (only resquest_response)-->
 
-		<argument value="getDeliveryStatus" />  <!-- Service Method Name -->
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
 		<argument value="3000" />  <!-- Output File Size -->
 
+	    <argument value="method"/><!--method-->
+		<argument value="method3"/><!-- method name -->
+		<argument value="3000" />  <!-- Method computing size -->
+		<argument value="3000" />  <!-- Output File Size -->
+	   
 	</process>
 
 	<process host="Revoada" function="br.usp.ime.simulation.datatypes.process.Service">
 
-		<argument value="registry" />  <!-- Service Name -->
-		<argument value="1"/> <!-- Ammount of workers -->
-
-		<argument value="getList" />  <!-- Service Method Name -->
+	    <argument value="4"/><!-- number of threads-->
+	    <argument value="WS3"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
 		<argument value="3000" />  <!-- Output File Size -->
+
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
+		<argument value="3000" />  <!-- Method computing size -->
+		<argument value="3000" />  <!-- Output File Size -->
+
+
 
 	</process>
 
@@ -53,12 +79,10 @@
 		<!-- <argument value="1000" />   Amount of choreography requests (instances) -->
 		<argument value="0" />   <!-- Requests per second -->
 
-		<argument value="registry" />   <!-- name of service to invoke-->
-		<argument value="getList"/><!-- name of method of service -->
+		<argument value="WS1" />   <!-- name of service to invoke-->
+		<argument value="method1"/><!-- name of method of service -->
 		<argument value="100"/><!-- message input size -->
-		<!--<argument value="10" />    Size of each returned value -->
-		<!--<argument value="1" />     Amount of orchestrated service providers -->
-		<argument value="Revoada"/><!-- message input size -->
+		<argument value="10" />    <!-- Size of each returned value -->
 	</process>
 
 </platform>

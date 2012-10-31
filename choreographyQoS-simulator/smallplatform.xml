@@ -26,6 +26,9 @@
    <route src="Bellemarre" dst="iRMX" symmetrical="NO">
       <link_ctn id="100"/>
    </route>
+   <route src="Bellemarre" dst="Revoada" symmetrical="YES">
+      <link_ctn id="100"/>
+   </route>
    <route src="iRMX" dst="Jacquelin" symmetrical="NO">
       <link_ctn id="100"/>
    </route>

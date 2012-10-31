@@ -1,6 +1,7 @@
 package br.usp.ime.simulation.datatypes.process;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,10 +15,12 @@ import org.simgrid.msg.Task;
 import org.simgrid.msg.TimeoutException;
 import org.simgrid.msg.TransferFailureException;
 
+import br.usp.ime.simulation.choreography.ChoreographyInstance;
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
+import br.usp.ime.simulation.monitoring.ChoreographyMonitor;
 import br.usp.ime.simulation.shared.ServiceInvoker;
 import br.usp.ime.simulation.shared.ServiceRegistry;
 
@@ -31,6 +34,7 @@ public class Service extends ServiceInvoker {
 	private String wsName;
 	private List<String> workerMailboxes;
 	private String[] mainArgs;
+	private List<String> mainArgs2 = new ArrayList<String>();
 	//private List<String> mainArgs;
 	private String myMailbox;
 	private boolean ended = false;
@@ -58,12 +62,20 @@ public class Service extends ServiceInvoker {
 		int workersNumber = Integer.parseInt(args[0]);
 		this.wsName = args[1];
 		
-		mainArgs = new String[args.length+2];
-		mainArgs = args.clone();
-		mainArgs[args.length]= myMailbox;
-		mainArgs[args.length+1]= "END";
+		mainArgs=Arrays.copyOf(args, args.length+2);
 		
+
 		myMailbox = "WS_" + wsName + "_at_" + getHost().getName();
+		mainArgs[mainArgs.length-2]= "END";
+		mainArgs[mainArgs.length-1]= myMailbox;
+		
+		
+		
+		//System.out.println("mainArgs size : "+mainArgs.length+" from "+args.length);
+		//System.out.println("mailbox: "+mainArgs[args.length]);
+		//System.out.println("END: "+mainArgs[args.length+1]);
+		
+		
 		ServiceRegistry.getInstance().putServiceMailbox(myMailbox);//service registring
 		ServiceRegistry.getInstance().putServiceAndServiceMailbox(wsName, myMailbox);
 		
@@ -85,7 +97,7 @@ public class Service extends ServiceInvoker {
 		while (true) {
 			try {
 				double startTime = Msg.getClock();
-				currentTask = receiveNewTask();
+				currentTask = receiveNewTask();//trying to receive taks
 				processTask( currentTask);
 			} catch (TransferFailureException e) {
 				e.printStackTrace();
@@ -103,7 +115,22 @@ public class Service extends ServiceInvoker {
 			throws TransferFailureException, HostFailureException,
 			TimeoutException {
 		if (currentTask instanceof WsRequest) {
-			String mailbox = getNextMailbox();
+			//verifying if it's a new Request
+			WsRequest currentRequest = ((WsRequest)currentTask);
+			ChoreographyInstance chorInstance = ChoreographyMonitor.findChoreographyInstance( currentRequest.getCompositionId());
+			
+			String mailbox;
+			System.out.println("Service o request: "+currentRequest.serviceName);
+
+		
+				
+			if( !currentRequest.serviceName.equals(this.wsName) ){//it isn't new request, then it's a dependency to be executed at other Service
+				Msg.info("Service: finding a ready service for a dependent request: "+currentRequest.getId()+" to service "+currentRequest.serviceName);				
+				mailbox = ServiceRegistry.getInstance().findServiceMailBoxByServiceName(currentRequest.serviceName);
+			}
+			else
+				mailbox = getNextMailbox();
+			
 			if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
 				Msg.info("Request Task received at service " + wsName
 						+ ". Redirecting to " + mailbox);

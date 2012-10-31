@@ -15,7 +15,8 @@ public class ManagerRequest {
 	private Map<Integer, WsRequest> requests;
 	private Map<WsRequest, Map<Integer, WsRequest>>  dependsOn;//depende de
 	//private Map<WsRequest, Map<Integer, WsRequest>> isDependencyOf;//é dependencia de, many parents
-	private Map<WsRequest, WsRequest> isDependencyOf;//only one parent
+	//private Map<WsRequest, WsRequest> isDependencyOf;//only one parent
+	private Map<Integer, WsRequest> isDependencyOf;//only one parent
 
 	//private static ManagerRequest instance=null;
 	
@@ -25,10 +26,11 @@ public class ManagerRequest {
 //		return instance;
 //	}
 	
+
 	public ManagerRequest() {
 		dependsOn = new HashMap<WsRequest, Map<Integer,WsRequest>>();
 		//isDependencyOf = new HashMap<WsRequest, Map<Integer,WsRequest>>();
-		this.isDependencyOf = new HashMap<WsRequest, WsRequest>();
+		this.isDependencyOf = new HashMap<Integer, WsRequest>();//new HashMap<WsRequest, WsRequest>();
 		requests = new HashMap<Integer, WsRequest>();
 	}
 
@@ -36,27 +38,40 @@ public class ManagerRequest {
 		requests.put(request.getId(),request);
 		dependsOn.put(request, new HashMap<Integer, WsRequest>() );
 		//isDependencyOf.put(request, new HashMap<Integer, WsRequest>() );
-		this.isDependencyOf.put(request, null);
+		//this.isDependencyOf.put(request.getId(), null);
+	}
+
+	public Map<Integer, WsRequest> getRequests() {
+		return requests;
+	}
+
+	public void setRequests(Map<Integer, WsRequest> requests) {
+		this.requests = requests;
 	}
 
 	public void addDependency(WsRequest request, WsRequest dependency) {
 		if (requests.get(request.getId())==null) {
-			Msg.info("Error adding dependency to non-existing request");
+			Msg.info("Error adding dependency to non-existing request: "+request.getId());
 			return;
 		}
 
 		this.dependsOn.get(request).put(dependency.getId(),dependency);
 		
-		if(this.isDependencyOf.get(dependency)==null){
-			Msg.info("Error adding dependency, non-existing dependencyOf");
-		}	
+		//if(this.isDependencyOf.get(dependency)==null){
+		//if (requests.get(dependency.getId())==null) {
+			//Msg.info("Error adding dependency, non-existing dependencyOf "+dependency.getId());
+		//}	
 		//isDependencyOf.get(dependency).put(request.getId(),request);
-		this.isDependencyOf.put(dependency, request);
+		//this.isDependencyOf.put(dependency, request);
+		this.isDependencyOf.put(dependency.getId(), request);
 	}
 
 	
 	public boolean findRequest(WsRequest request) {
-		return this.requests.get(request)!=null;
+		if (this.requests.get( request.getId() ) == null)
+			return false;
+		
+		return true;
 	}
 	/**
 	 * Taks ready to execute because don't have dependencies
@@ -122,8 +137,10 @@ public class ManagerRequest {
 		}
 		else{
 			Msg.info("Could not find inputted request (" + dependency.toString() + ")");
-			for(WsRequest req : isDependencyOf.keySet()){
-				Msg.info("key: " + req.toString());
+			//for(WsRequest req : isDependencyOf.keySet()){
+			for(Integer reqId : isDependencyOf.keySet()){
+				//Msg.info("key: " + req.toString());
+				Msg.info("key: " + reqId.toString());
 			}
 		}
 	}
@@ -138,12 +155,12 @@ public class ManagerRequest {
 		dependsOn.get(parent).remove(dependency.getId());
 	}
 
-	public WsRequest getParentDependency(WsRequest requestServed) {
-		return this.isDependencyOf.get(requestServed);
+	public WsRequest getParentDependency(WsRequest request) {
+		return this.isDependencyOf.get(request.getId());
 	}
 	
 	public Map<Integer, WsRequest> getRequestDependencies(WsRequest request){
-		return this.dependsOn.get(request.id);
+		return this.dependsOn.get(request.getId());
 	}
 	
 	public boolean areCompletedRequestDependencies(WsRequest req){
@@ -155,5 +172,12 @@ public class ManagerRequest {
 		return true;
 	}
 
+	public Map<Integer, WsRequest> getIsDependencyOf() {
+		return isDependencyOf;
+	}
+
+	public void setIsDependencyOf(Map<Integer, WsRequest> isDependencyOf) {
+		this.isDependencyOf = isDependencyOf;
+	}
 	
 }

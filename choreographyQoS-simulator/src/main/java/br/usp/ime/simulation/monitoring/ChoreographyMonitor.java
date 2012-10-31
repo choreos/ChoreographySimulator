@@ -18,6 +18,7 @@ public class ChoreographyMonitor {//extends Process{
 	public static  ChoreographyInstance nextChoreographyInstance(){
 		ChoreographyInstance instance = new ChoreographyInstance();
 		instance.setCompositionId(nextChoreographyId());
+		choreographyInstances.put(instance.getCompositionId(), instance);
 		return instance;
 	}
 	

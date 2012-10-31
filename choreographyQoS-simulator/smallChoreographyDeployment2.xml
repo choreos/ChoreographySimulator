@@ -10,18 +10,18 @@
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+		<argument value="2000" />  <!-- Output File Size -->
 
 		<argument value="dependency"/><!-- method exec time-->
 			<argument value="WS3"/><!-- service name-->		
 			<argument value="method2"/><!-- operation name-->		
 			<argument value="3000" />  <!-- Method input size -->
-			<argument value="3000" />  <!-- Output File Size (only resquest_response)-->
+			<argument value="2000" />  <!-- Output File Size (only resquest_response)-->
 	
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
-		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+		<argument value="2000" />  <!-- Method computing size -->
+		<argument value="2000" />  <!-- Output File Size -->
 
 
 	</process>
@@ -34,23 +34,23 @@
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+		<argument value="2000" />  <!-- Output File Size -->
 
 		<argument value="dependency"/><!-- method exec time-->
 			<argument value="WS4"/><!-- service name-->		
 			<argument value="method3"/><!-- operation name-->		
 			<argument value="3000" />  <!-- Method input size -->
-			<argument value="3000" />  <!-- Output File Size (only resquest_response)-->
+			<argument value="2000" />  <!-- Output File Size (only resquest_response)-->
 
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+		<argument value="2000" />  <!-- Output File Size -->
 
 	    <argument value="method"/><!--method-->
 		<argument value="method3"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+		<argument value="2000" />  <!-- Output File Size -->
 	   
 	</process>
 
@@ -62,12 +62,12 @@
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+		<argument value="2000" />  <!-- Output File Size -->
 
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
 		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="3000" />  <!-- Output File Size -->
+		<argument value="2000" />  <!-- Output File Size -->
 
 
 

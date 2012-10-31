@@ -63,7 +63,7 @@ public class ChoreographyParser {
         		ServiceOperation so1= ChoreographyModel.findServiceOperation(source.getAttributeValue("service"), source.getAttributeValue("operation"));
         		System.out.println("SO1: <"+source.getAttributeValue("service")+","+source.getAttributeValue("operation")+">");
         		ServiceOperation so2= ChoreographyModel.findServiceOperation(target.getAttributeValue("service"), target.getAttributeValue("operation"));
-        		System.out.println("SO2: "+so2);
+        		System.out.println("SO2: <"+target.getAttributeValue("service")+","+target.getAttributeValue("operation")+">");
         		String interactionType=target.getAttributeValue("type");
         		MessageInteractionType miType;
         		

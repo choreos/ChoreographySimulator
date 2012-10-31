@@ -27,7 +27,7 @@
 	<interactions>
 		<interaction name="interactionWS1-WS3" >
 			<source service="WS1"  operation="method1"   />
-			<target service="WS3" operation="method3"    type="REQUEST_RESPONSE" />
+			<target service="WS3" operation="method2"    type="REQUEST_RESPONSE" />
 		</interaction>
 		<!-- <interaction name="interactionWS1-WS3_WS4" >
 			<source service="WS3"  operation="method2"   />

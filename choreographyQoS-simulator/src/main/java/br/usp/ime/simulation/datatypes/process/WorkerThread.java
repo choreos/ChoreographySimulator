@@ -69,25 +69,37 @@ public class WorkerThread extends Process {
 		//for (int i = 2; i < args.length-1; i += 3) {
 			//createMethod(this.wsName, args[i], args[i + 1], args[i + 2]);
 		//}
+		System.out.println("Args lenght: "+args.length);
+		System.out.println("Arg["+0+"]= "+args[0]);
+		System.out.println("Arg["+1+"]= "+args[1]);
+		System.out.println("Arg["+(args.length-2)+"]= "+args[args.length-2]);
+		System.out.println("Arg["+(args.length-1)+"]= "+args[args.length-1]);
 		
-		for (int i = 2; i < args.length-1; ) {
-			
-			if(args[i]!="method")
-				Msg.info("WorkerThread: Error parsing at method creating");
+		
+		for (int i = 2; i < args.length; ) {
+			System.out.println("Arg["+i+"]= "+args[i]);
+			if( !args[i].equals("method") ){
+				Msg.info("WorkerThread: Error parsing at method creating, not found method value tag, i="+i);
+				break;
+			}	
 			WsMethod currentMethod= createMethod(this.wsName, args[i+1], args[i + 2], args[i + 3]);
 			this.methods.put(currentMethod.getName(), currentMethod);
 			
 			i=i+4;
-			if(args[i]=="END")
-				break;
-			if(args[i]=="dependency"){//only a single dependency
+			System.out.println("Arg["+i+"]= "+args[i]);
+			
+			if(args[i].equals("dependency")){//only a single dependency
+				System.out.println("Have dependency");
 				WsMethod dependentMethod= createMethod(args[i+1], args[i + 2], args[i + 3], args[i + 4]);
-				currentMethod.addDependency(dependentMethod.getServiceName(), dependentMethod);
-				i=i+9;
+				//currentMethod.addDependency(dependentMethod.getServiceName(), dependentMethod);
+				currentMethod.addDependency(dependentMethod.getName(), dependentMethod);
+				i=i+5;
+				System.out.println("Arg["+i+"]= "+args[i]);
 			}
-			else{
-				Msg.info("WorkerThread: Error parsing at method creating");
-			}
+			if(args[i].equals("END") ){
+				System.out.println("END");
+				break;
+			}	
 		}
 			
 		
@@ -102,7 +114,7 @@ public class WorkerThread extends Process {
 			
 			if (ControlVariables.DEBUG
 					|| ControlVariables.PRINT_TASK_TRANSMISSION)
-				Msg.info("WorkerThread: Received task from " + task.getSource().getName());
+				Msg.info("WorkerThread: Received task, sender " + task.getSender());
 			if (task instanceof WsRequest) {
 				Msg.info("WorkerThread: task instanceof WsRequest, to execute " );
 				WsRequest wsRequest = (WsRequest) task;
@@ -119,10 +131,16 @@ public class WorkerThread extends Process {
 				//if(outstandingExecutionRequests.get( responseTask.requestServed.getId() )!=null){//
 				//if(outstandingExecutionRequests.get( responseTask.requestServed.getId() )!=null){////response of a dependent method from a current request?
 
+				//Msg.info("WorkerThread: original request of response: "+responseTask.requestServed.getId());
 				ChoreographyInstance chorInstance= ChoreographyMonitor.findChoreographyInstance(responseTask.requestServed.getCompositionId());
+				//Msg.info("WorkerThread: chorInstance: "+chorInstance.getCompositionId());
+				
+				
 				WsRequest parentRequest= chorInstance.getManagerRequest().getParentDependency(responseTask.requestServed);
+				//Msg.info("WorkerThread: parentrequest id: "+parentRequest.getId());
 
 				
+				//Msg.info("WorkerThread:handling recieved response: 
 				//response of a dependent method from a current request(responseTask.requestServed)?
 				if(  parentRequest!=null &&  responseTask.requestServed.done ){ //
 					ManagerRequest managerRequest = chorInstance.getManagerRequest();
@@ -169,6 +187,7 @@ public class WorkerThread extends Process {
 	public void executeMethod(WsRequest request) throws MsgException {
 		
 		ChoreographyInstance chorInstance = ChoreographyMonitor.findChoreographyInstance(request.getCompositionId());
+		System.out.println("chorInstance ID is: " +chorInstance.getCompositionId());
 		chorInstance.getManagerRequest().addRequest(request); //new request to execute
 		WsMethod currentMethod = requestWsMethodTask(request.serviceMethod);
 		
@@ -220,6 +239,7 @@ public class WorkerThread extends Process {
 	
 	private void handleSequenceFlow(ServiceOperation so, WsMethod currentMethod, WsRequest currentRequest) throws TransferFailureException, HostFailureException, TimeoutException, TaskCancelledException {
 
+		System.out.println("Dependencies: "+currentMethod.getDependencies().size());
 		WsMethod dependentMethod = currentMethod.getDependencies().values().iterator().next();
 
 		WsRequest requestDependentTask = new WsRequest(dependentMethod.getServiceName(),
@@ -227,9 +247,14 @@ public class WorkerThread extends Process {
 		
 		ChoreographyInstance chorInstance= ChoreographyMonitor.findChoreographyInstance(currentRequest.getCompositionId());
 		requestDependentTask.setCompositionId(currentRequest.getCompositionId());
-		chorInstance.getManagerRequest().addRequest(requestDependentTask);
 		
+		//chorInstance.getManagerRequest().addRequest(requestDependentTask);//it was maked at Service redirecting
 		
+		System.out.println("ManagerRequest: current size: "+chorInstance.getManagerRequest().getRequests().size() );
+		System.out.println("ManagerRequest: current: "+chorInstance.getManagerRequest().getRequests() );
+		
+
+		redirectTask(requestDependentTask);//redirecting Task to Service
 		
 		//String serviceOperationKey= dependentMethod.getServiceName()+"_"+dependentMethod.getName();
 		//if( currentMethod.getMIType(serviceOperationKey)==MessageInteractionType.Request_Response ){
@@ -237,7 +262,8 @@ public class WorkerThread extends Process {
 
 			Msg.info("Waiting a response of dependent service ");
 			//String outstandingRequestKey=  currentRequest.instanceId+"_cu" ;
-			chorInstance.getManagerRequest().addDependency(currentRequest, requestDependentTask);
+			//adding dependency
+			chorInstance.getManagerRequest().addDependency(currentRequest, requestDependentTask);//in order to waiting a response			
 			
 			//this.outstandingExecutionRequests.put(currentRequest.id,currentRequest);
 			//addOutstandingResponse(currentRequest, requestDependentTask);
@@ -245,12 +271,11 @@ public class WorkerThread extends Process {
 			
 		}
 		else{
-			//Only Request with no response: Nothing to do
+			Msg.info("No Waiting, then can be execute ");
+			//Only Request with no response: then to execute currentRequest
 			//What to do when the interaction is asyn?????
+			directExecuteMethod(currentRequest, currentMethod);
 		}
-		
-		redirectTask(requestDependentTask);//redirecting Task to Service
-
 	}
 
 	
@@ -297,8 +322,8 @@ public class WorkerThread extends Process {
 		response.requestServed = request;
 		response.serviceMethod = request.serviceMethod;
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
-			Msg.info("Sending response from " + request.destination);
-		response.requestServed.done=true;//?
+			Msg.info("Sending response from " + request.destination);//TODO destination?
+		response.requestServed.done=true;//TODO verify?
 		response.send(responseMailbox);
 	}
 
@@ -312,6 +337,12 @@ public class WorkerThread extends Process {
 		WsMethod cloneMethod = new WsMethod(method.getServiceName(),method.getName(),
 				method.getComputeDuration(), 0,
 				method.getOutputFileSizeInBytes());
+		//cloning dependencies
+		for(WsMethod dependency: method.getDependencies().values()){
+			WsMethod cloneMethodDependency=new WsMethod(dependency.getServiceName(), dependency.getName(),
+					dependency.getComputeDuration(), 0, dependency.getOutputFileSizeInBytes());
+			cloneMethod.addDependency(cloneMethodDependency.getName(), cloneMethodDependency);
+		}
 		return cloneMethod;
 	}
 

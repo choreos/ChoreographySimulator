@@ -14,7 +14,7 @@ public class WsMethod extends Task {
 	private double outputFileSizeInBytes;
 	private String wsMethodName;
 	private String serviceName;
-	private Map<String, WsMethod> dependencies;//key : serviceName
+	private Map<String, WsMethod> dependencies;//key : methodsName
 	
 	//private Map<String, WsMethod> executedDependencies;
 	private boolean isSynchronous;
@@ -43,8 +43,8 @@ public class WsMethod extends Task {
 		return (this.dependencies != null && !dependencies.isEmpty());
 	}
 	
-	public void addDependency(String service, WsMethod Method){
-		this.dependencies.put(service, Method);
+	public void addDependency(String methodName, WsMethod Method){
+		this.dependencies.put(methodName, Method);
 	}
 	
 	

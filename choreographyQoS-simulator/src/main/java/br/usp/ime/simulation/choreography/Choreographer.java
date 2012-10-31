@@ -80,7 +80,7 @@ public class Choreographer extends ServiceInvoker {
 	}
 
 	private String findServiceMailbox(String entryServiceName) throws InterruptedException {
-		wait(1000);
+		//wait(1000);
 		String mailbox= ServiceRegistry.getInstance().findServiceMailBoxByServiceName(entryServiceName);
 		return mailbox;
 	}
@@ -106,6 +106,7 @@ public class Choreographer extends ServiceInvoker {
 
 	private void initRequests() throws MsgException {
 		ChoreographyInstance chorInstance = ChoreographyMonitor.nextChoreographyInstance();
+		Msg.info("Choreography Instance ID:  "+chorInstance.getCompositionId());
 		Msg.info("initRequest ");
 		WsRequest requestTask = new WsRequest(this.entryServiceName, this.entryServiceNameMethod 
 												,this.inputMessageSize ,this.myMailbox);

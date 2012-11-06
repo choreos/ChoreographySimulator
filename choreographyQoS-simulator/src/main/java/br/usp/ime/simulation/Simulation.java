@@ -9,6 +9,9 @@ package br.usp.ime.simulation;
 import org.simgrid.msg.Msg;
 import org.simgrid.msg.NativeException;
 
+import br.usp.ime.simulation.choreography.model.ChoreographyModel;
+import br.usp.ime.simulation.monitoring.ChoreographyMonitor;
+
 public class Simulation {
 	
    /* This only contains the launcher. If you do nothing more than than you can run 
@@ -24,7 +27,7 @@ public class Simulation {
 	/* initialize the MSG simulation. Must be done before anything else (even logging). */
 	Msg.init(args);
 
-    if(args.length == 2) {
+    if(args.length == 3) {
     	platform = args[0];
     	deploymentFile = args[1];
     	}
@@ -35,6 +38,13 @@ public class Simulation {
 	/* construct the platform and deploy the application */
 	Msg.createEnvironment(platform);
 	Msg.deployApplication(deploymentFile);
+	
+	int nro_request=Integer.parseInt(args[2]);
+	
+	//Generating the Choreograpphy model from a specification xml 
+	ChoreographyModel.generateChoreographyMode("smallChoreographySpecification.xml");
+	ChoreographyMonitor.setNumberRequests(nro_request);
+	
 		
 	/*  execute the simulation. */
 	Msg.run();

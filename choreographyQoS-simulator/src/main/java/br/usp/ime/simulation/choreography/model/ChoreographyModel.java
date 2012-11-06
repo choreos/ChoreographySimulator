@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.usp.ime.simulation.choreography.ChoreographyParser;
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 
@@ -45,6 +46,10 @@ public class ChoreographyModel {
 		roleServices.put(s.getName(), s);
 	}
 
+	public static void generateChoreographyMode(String file){
+		ChoreographyParser parser= new ChoreographyParser(file);
+		parser.generateChoreographyModel();
+	}
 	
 	public static ServiceOperation findServiceOperation(String servicename, String operationName){
 		if(roleServices.get(servicename)==null)

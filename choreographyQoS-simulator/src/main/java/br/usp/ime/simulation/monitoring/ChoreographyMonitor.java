@@ -10,6 +10,7 @@ public class ChoreographyMonitor {//extends Process{
 
 	private static Map<Long, ChoreographyInstance> choreographyInstances = new HashMap<Long, ChoreographyInstance>();
 	private static Long nextChoreographyId=0L;
+	private static int numberRequests=1;
 	
 	public  static void addChoreographyInstance(ChoreographyInstance instance){
 		choreographyInstances.put(instance.getCompositionId(), instance);
@@ -28,5 +29,13 @@ public class ChoreographyMonitor {//extends Process{
 	
 	private static Long nextChoreographyId(){
 		return nextChoreographyId++;
+	}
+
+	public static int getNumberRequests() {
+		return numberRequests;
+	}
+
+	public static void setNumberRequests(int numberRequest) {
+		ChoreographyMonitor.numberRequests = numberRequest;
 	}
 }

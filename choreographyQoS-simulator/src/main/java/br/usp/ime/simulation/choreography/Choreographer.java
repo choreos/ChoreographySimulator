@@ -1,8 +1,11 @@
 package br.usp.ime.simulation.choreography;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 import org.simgrid.msg.Host;
 import org.simgrid.msg.Msg;
@@ -12,6 +15,7 @@ import org.simgrid.msg.Task;
 
 import commTime.FinalizeTask;
 
+import br.usp.ime.simulation.choreography.model.ChoreographyModel;
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
@@ -32,9 +36,8 @@ public class Choreographer extends ServiceInvoker {
 	private String entryMailbox="";
 	private String entryServiceName="";
 	private String entryServiceNameMethod="";
-	
+	private int nro_requests=1;
 	private Log log = new Log();
-	
 	
 	//public Choreographer(String[] mainArgs, Host host) {
 	public Choreographer(Host host, String name, String[]args) {
@@ -48,14 +51,13 @@ public class Choreographer extends ServiceInvoker {
 			System.exit(1);
 		}
 
-		this.log.open();
-		ControlVariables.DEBUG =true; ControlVariables.PRINT_ALERTS=true; 
-
-
-		ChoreographyParser parser= new ChoreographyParser("smallChoreographySpecification.xml");
-		parser.generateChoreographyModel();
-		
 		int numberOfInstances=1;
+		this.nro_requests = ChoreographyMonitor.getNumberRequests();
+		this.log.open("sim_chor_"+this.nro_requests+".log");
+		ControlVariables.DEBUG =true; ControlVariables.PRINT_ALERTS=true;
+		
+		
+		
 		this.throughput = Integer.valueOf(args[0]);
 		
 		this.entryServiceName = args[1];
@@ -77,8 +79,12 @@ public class Choreographer extends ServiceInvoker {
 			Msg.info("Choreographer mailbox: '" + myMailbox + "'");
 			
 			this.enact();
+			
 	}
 
+	
+	
+	
 	private String findServiceMailbox(String entryServiceName) throws InterruptedException {
 		//wait(1000);
 		String mailbox= ServiceRegistry.getInstance().findServiceMailBoxByServiceName(entryServiceName);
@@ -87,31 +93,52 @@ public class Choreographer extends ServiceInvoker {
 
 	private void enact() throws MsgException {
 		
-		initRequests();
+		fireRequests();
+		
+		int pendingRequests= this.nro_requests;
+		while(pendingRequests>0){
+			
 			
 			ResponseTask response = (ResponseTask) getResponse(myMailbox);
+			
+			if(response==null){
+				System.out.println("Response Null!");
+				continue;
+			}
+			
 			double startTime = response.requestServed.startTime;
-			log.record(startTime, Msg.getClock(),response.serviceMethod);
-			//Orchestration orch = orchestrationInstances.get(response.instanceId);
+			double finishTime = Msg.getClock();
+			log.record(startTime, finishTime,response.serviceMethod);
+			//log.record(start, finish,response.serviceMethod);
+			//System.out.println("TR: "+(finish-start));
+			//System.out.println("<"+ startTime+" , "+Msg.getClock()+">");
+			
 			if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
 				Msg.info("Task " + response.serviceMethod
 						+ " completed for instance " + response.instanceId);
-
+	
 			//orch.notifyTaskConclusion(response.requestServed);
-
+			pendingRequests--;
+		}
 		
 		finalizeAll();
 
 	}
 
-	private void initRequests() throws MsgException {
-		ChoreographyInstance chorInstance = ChoreographyMonitor.nextChoreographyInstance();
-		Msg.info("Choreography Instance ID:  "+chorInstance.getCompositionId());
-		Msg.info("initRequest ");
-		WsRequest requestTask = new WsRequest(this.entryServiceName, this.entryServiceNameMethod 
-												,this.inputMessageSize ,this.myMailbox);
-		requestTask.setCompositionId(chorInstance.getCompositionId());
-		invokeWsMethod(requestTask, myMailbox, entryMailbox);
+	private void fireRequests() throws MsgException {
+
+		//sending concurrent requests
+		for (int i = 0; i< this.nro_requests; i++){
+			ChoreographyInstance chorInstance = ChoreographyMonitor.nextChoreographyInstance();
+			Msg.info("Choreography Instance ID:  "+chorInstance.getCompositionId());
+			Msg.info("initRequest ");
+			
+			WsRequest requestTask = new WsRequest(this.entryServiceName, this.entryServiceNameMethod 
+													,this.inputMessageSize ,this.myMailbox);
+			requestTask.setCompositionId(chorInstance.getCompositionId());
+			requestTask.startTime= Msg.getClock();
+			invokeWsMethod(requestTask, myMailbox, entryMailbox);
+		}
 		
 	}
 
@@ -123,9 +150,8 @@ public class Choreographer extends ServiceInvoker {
 			Msg.info("Choreography  is done. Bye!");	
 	}
 
+
 	private void finalizeAll() throws MsgException {
-		
-		
 		Msg.info("Ending choreography...");
 		
 		//FinalizeTask task = new FinalizeTask();
@@ -145,6 +171,7 @@ public class Choreographer extends ServiceInvoker {
 		ServiceRegistry.getInstance().reset();
 		this.log.close();
 	}
+	
 	
 	
 }

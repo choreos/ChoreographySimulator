@@ -97,6 +97,7 @@ public class Service extends ServiceInvoker {
 		while (true) {
 			try {
 				double startTime = Msg.getClock();
+				//calculate here a response time
 				currentTask = receiveNewTask();//trying to receive taks
 				processTask( currentTask);
 			} catch (TransferFailureException e) {

@@ -13,6 +13,9 @@ public class Log {
 		log = openLog("sim.log");
 	}
 	
+	public void open(String name){
+		log = openLog(name);
+	}
     private static BufferedWriter openLog(final String filename) {
         FileWriter fstream = null;
         try {
@@ -25,8 +28,9 @@ public class Log {
         return new BufferedWriter(fstream);
     }
 	
-    public void record( final double start, final double end, String... extraCols) {
-        String line = end + " " + (end - start);
+    public void record( final double start,  double end, String... extraCols) {
+    	double tr= (end - start);
+        String line = start +" "+end + " " + tr ;
 
         for (String column : extraCols) {
             line = line + " " + column;
@@ -35,6 +39,16 @@ public class Log {
         writeln(line);
     }
     
+    public void record( String... extraCols) {
+        String line = "";
+
+        for (String column : extraCols) {
+            line = line + " " + column;
+        }
+
+        writeln(line);
+    }
+
     private static void writeln(String line) {
         try {
             synchronized (Log.class) {

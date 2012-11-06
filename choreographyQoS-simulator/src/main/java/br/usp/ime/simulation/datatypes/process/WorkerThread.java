@@ -93,6 +93,8 @@ public class WorkerThread extends Process {
 				WsMethod dependentMethod= createMethod(args[i+1], args[i + 2], args[i + 3], args[i + 4]);
 				//currentMethod.addDependency(dependentMethod.getServiceName(), dependentMethod);
 				currentMethod.addDependency(dependentMethod.getName(), dependentMethod);
+				System.out.println("dependencie: "+ dependentMethod.getName()+" of service "+ dependentMethod.getServiceName());
+				//currentMethod.addDependency(dependentMethod.getServiceName(), dependentMethod);
 				i=i+5;
 				System.out.println("Arg["+i+"]= "+args[i]);
 			}
@@ -240,6 +242,8 @@ public class WorkerThread extends Process {
 	private void handleSequenceFlow(ServiceOperation so, WsMethod currentMethod, WsRequest currentRequest) throws TransferFailureException, HostFailureException, TimeoutException, TaskCancelledException {
 
 		System.out.println("Dependencies: "+currentMethod.getDependencies().size());
+		System.out.println("Dependencies SO: "+so.getDependencies().size());
+		System.out.println("current Method: "+currentMethod.getName()+" of service "+currentMethod.getServiceName());
 		WsMethod dependentMethod = currentMethod.getDependencies().values().iterator().next();
 
 		WsRequest requestDependentTask = new WsRequest(dependentMethod.getServiceName(),
@@ -327,9 +331,11 @@ public class WorkerThread extends Process {
 		response.send(responseMailbox);
 	}
 
+	//public WsMethod requestWsMethodTask(String wsMethodName) {
 	public WsMethod requestWsMethodTask(String wsMethodName) {
 		if (ControlVariables.DEBUG)
 			Msg.info("WorkerThread: requestWsMethodTask, retrieving the method: "+wsMethodName + " of "+this.methods.size()+" methods");
+		//WsMethod method = methods.get(wsMethodName);//critic point
 		WsMethod method = methods.get(wsMethodName);//critic point
 		if(method== null && ControlVariables.DEBUG)
 			Msg.info("WorkerThread: requestWsMethodTask - method null!");

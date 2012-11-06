@@ -6,6 +6,7 @@
    <host id="iRMX" power="68667000"/>
    <host id="Revoada" power="68667000"/>
    <host id="Bellemarre" power="34333000"/>
+   <host id="Vincent" power="34333000"/>
 
    <link id="10" bandwidth="100" latency="10"/>
    <link id="100" bandwidth="100000" latency="0.02"/>

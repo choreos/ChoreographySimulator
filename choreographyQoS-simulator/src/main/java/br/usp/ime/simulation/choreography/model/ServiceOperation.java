@@ -46,6 +46,7 @@ public class ServiceOperation{
 			//this.dependenciesGroupsByMIType.put(miType, new HashMap<String, ServiceOperation>());
 			
 		this.dependencies.put(so.name, so);
+		//this.dependencies.put(so.service.getName(), so);
 		this.miTypeDependencies.put(so.name, miType);
 		//this.dependenciesGroupsByMIType.get(miType).put(so.getName(), so);
 	}

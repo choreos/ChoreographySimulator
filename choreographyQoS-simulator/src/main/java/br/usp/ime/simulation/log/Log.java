@@ -6,20 +6,26 @@ import java.io.IOException;
 
 
 public class Log {
-	public static BufferedWriter log;
+	public BufferedWriter log;
 	public static final String LOGNAME = "sim.log";
-	
+
 	public void open(){
-		log = openLog("sim.log");
+		log = openLog("sim.log", false);
 	}
 	
-	public void open(String name){
-		log = openLog(name);
+	public void open(String name, boolean append){
+		log = openLog(name, append);
 	}
-    private static BufferedWriter openLog(final String filename) {
+
+	public void open(String name){
+		log = openLog(name, false);
+	}
+	
+	private BufferedWriter openLog(final String filename, boolean append) {
         FileWriter fstream = null;
         try {
-            fstream = new FileWriter(filename);
+            fstream = new FileWriter(filename, append);
+            
         } catch (IOException e) {
             System.err.println("Error while opening " + filename);
             e.printStackTrace();
@@ -27,7 +33,17 @@ public class Log {
 
         return new BufferedWriter(fstream);
     }
-	
+
+    
+    public void recordToDataset( String... extraCols) {
+        String line = "";
+        for (String column : extraCols) {
+            line = line + " " + column;
+        }
+
+        writeln(line);
+    }
+
     public void record( final double start,  double end, String... extraCols) {
     	double tr= (end - start);
         String line = start +" "+end + " " + tr ;
@@ -49,7 +65,7 @@ public class Log {
         writeln(line);
     }
 
-    private static void writeln(String line) {
+    private void writeln(String line) {
         try {
             synchronized (Log.class) {
                 log.write(line + "\n");
@@ -63,9 +79,12 @@ public class Log {
     public void close(){
     	try {
 			log.close();
+			
 		} catch (IOException e) {
 			System.err.println("Error while close file");
 			e.printStackTrace();
 		}
     }
+    
+    
 }

@@ -4,7 +4,7 @@
 	
 	<process host="Bellemarre" function="br.usp.ime.simulation.datatypes.process.Service">
 
-	    <argument value="4"/><!-- number of threads-->
+	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS1"/><!--service name-->
 	    
 	    <argument value="method"/><!--method-->
@@ -28,7 +28,7 @@
 
 	<process host="iRMX" function="br.usp.ime.simulation.datatypes.process.Service">
 
-	    <argument value="4"/><!-- number of threads-->
+	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS2"/><!--service name-->
 	    
 	    <argument value="method"/><!--method-->
@@ -56,7 +56,7 @@
 
 	<process host="Revoada" function="br.usp.ime.simulation.datatypes.process.Service">
 
-	    <argument value="4"/><!-- number of threads-->
+	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS3"/><!--service name-->
 	    
 	    <argument value="method"/><!--method-->

@@ -22,28 +22,31 @@ public class Simulation {
     public static void main(final String[] args) throws NativeException {
     String platform = "smallplatform.xml";
     //String deploymentFile = "smallOrchestrationDeployment.xml";
-    String deploymentFile = "smallChoreographyDeployment.xml";
-    
+    String deploymentFile = "smallChoreographyDeployment2.xml";
+    String specificationFile = "smallChoreographySpacification.xml";
+    int nro_request=1;
 	/* initialize the MSG simulation. Must be done before anything else (even logging). */
 	Msg.init(args);
 
-    if(args.length == 3) {
+    if(args.length == 4) {
     	platform = args[0];
     	deploymentFile = args[1];
-    	}
+    	specificationFile = args[2];
+    	nro_request=Integer.parseInt(args[3]);
+    }
     else{
     	Msg.info("Usage   : Simulation platform_file deployment_file");
         Msg.info("example : Simulation comm_time_platform.xml comm_time_deployment.xml");
     }
+    
+  //Generating the Choreograpphy model from a specification xml 
+  	//ChoreographyModel.generateChoreographyMode("smallChoreographySpecification.xml");
+  	ChoreographyModel.generateChoreographyMode(specificationFile);
+  	ChoreographyMonitor.setNumberRequests(nro_request);
+  	
 	/* construct the platform and deploy the application */
 	Msg.createEnvironment(platform);
 	Msg.deployApplication(deploymentFile);
-	
-	int nro_request=Integer.parseInt(args[2]);
-	
-	//Generating the Choreograpphy model from a specification xml 
-	ChoreographyModel.generateChoreographyMode("smallChoreographySpecification.xml");
-	ChoreographyMonitor.setNumberRequests(nro_request);
 	
 		
 	/*  execute the simulation. */

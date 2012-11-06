@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.simgrid.msg.Host;
 import org.simgrid.msg.Msg;
 import org.simgrid.msg.MsgException;
@@ -20,6 +21,7 @@ import br.usp.ime.simulation.datatypes.task.ResponseTask;
 import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
+import br.usp.ime.simulation.experiments.control.Statistics;
 import br.usp.ime.simulation.log.Log;
 import br.usp.ime.simulation.monitoring.ChoreographyMonitor;
 import br.usp.ime.simulation.orchestration.Orchestration;
@@ -36,9 +38,10 @@ public class Choreographer extends ServiceInvoker {
 	private String entryMailbox="";
 	private String entryServiceName="";
 	private String entryServiceNameMethod="";
-	private int nro_requests=1;
+	private Integer nro_requests=1;
 	private Log log = new Log();
 	
+		
 	//public Choreographer(String[] mainArgs, Host host) {
 	public Choreographer(Host host, String name, String[]args) {
 		super(host, "choreographer", args);
@@ -54,6 +57,8 @@ public class Choreographer extends ServiceInvoker {
 		int numberOfInstances=1;
 		this.nro_requests = ChoreographyMonitor.getNumberRequests();
 		this.log.open("sim_chor_"+this.nro_requests+".log");
+		Statistics.openDataset();
+		
 		ControlVariables.DEBUG =true; ControlVariables.PRINT_ALERTS=true;
 		
 		
@@ -97,8 +102,6 @@ public class Choreographer extends ServiceInvoker {
 		
 		int pendingRequests= this.nro_requests;
 		while(pendingRequests>0){
-			
-			
 			ResponseTask response = (ResponseTask) getResponse(myMailbox);
 			
 			if(response==null){
@@ -106,8 +109,9 @@ public class Choreographer extends ServiceInvoker {
 				continue;
 			}
 			
-			double startTime = response.requestServed.startTime;
-			double finishTime = Msg.getClock();
+			Double startTime = response.requestServed.startTime;
+			Double finishTime = Msg.getClock();
+			Statistics.statsResponseTime.addValue(finishTime-startTime);
 			log.record(startTime, finishTime,response.serviceMethod);
 			//log.record(start, finish,response.serviceMethod);
 			//System.out.println("TR: "+(finish-start));
@@ -120,6 +124,8 @@ public class Choreographer extends ServiceInvoker {
 			//orch.notifyTaskConclusion(response.requestServed);
 			pendingRequests--;
 		}
+		
+		Statistics.recordDescriptiveStatistics(this.nro_requests);
 		
 		finalizeAll();
 
@@ -170,6 +176,7 @@ public class Choreographer extends ServiceInvoker {
 
 		ServiceRegistry.getInstance().reset();
 		this.log.close();
+		Statistics.closeDataset();
 	}
 	
 	

@@ -34,8 +34,6 @@ public class Service extends ServiceInvoker {
 	private String wsName;
 	private List<String> workerMailboxes;
 	private String[] mainArgs;
-	private List<String> mainArgs2 = new ArrayList<String>();
-	//private List<String> mainArgs;
 	private String myMailbox;
 	private boolean ended = false;
 	private int lastUsedMailboxIndex=0;
@@ -101,12 +99,16 @@ public class Service extends ServiceInvoker {
 				currentTask = receiveNewTask();//trying to receive taks
 				processTask( currentTask);
 			} catch (TransferFailureException e) {
+				System.out.println("Transfer Exception ");
 				e.printStackTrace();
 			} catch (HostFailureException e) {
+				System.out.println("Host Failure Exception ");
 				e.printStackTrace();
 			} catch (TimeoutException e) {
+				System.out.println("Timeout Exception ");
 				e.printStackTrace();
 			}
+			
 			if (ended)
 				break;
 		}
@@ -118,18 +120,17 @@ public class Service extends ServiceInvoker {
 		if (currentTask instanceof WsRequest) {
 			//verifying if it's a new Request
 			WsRequest currentRequest = ((WsRequest)currentTask);
-			ChoreographyInstance chorInstance = ChoreographyMonitor.findChoreographyInstance( currentRequest.getCompositionId());
 			
 			String mailbox;
-			System.out.println("Service o request: "+currentRequest.serviceName);
+			System.out.println("Service request to : "+currentRequest.serviceName);
 
 		
-				
-			if( !currentRequest.serviceName.equals(this.wsName) ){//it isn't new request, then it's a dependency to be executed at other Service
+			//it isn't new request, then it's a dependency to be executed at other Service,  from a workthread (so same service)	
+			if( !currentRequest.serviceName.equals(this.wsName) ){
 				Msg.info("Service: finding a ready service for a dependent request: "+currentRequest.getId()+" to service "+currentRequest.serviceName);				
 				mailbox = ServiceRegistry.getInstance().findServiceMailBoxByServiceName(currentRequest.serviceName);
 			}
-			else
+			else// simple request from other Service 
 				mailbox = getNextMailbox();
 			
 			if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
@@ -180,7 +181,13 @@ public class Service extends ServiceInvoker {
 			TimeoutException {
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
 			Msg.info("Redirecting to worker thread at " + mailbox);
+		
+		try{
 		task.send(mailbox);
+		}catch(Exception e){
+			System.out.println("Error sending: "+ e.getMessage());
+			e.printStackTrace();
+		}
 
 	}
 

@@ -36,9 +36,8 @@ public class WorkerThread extends Process {
 	private String myMailbox;
 	private String myServiceMailbox;
 	
-	//private HashMap<String, WsMethod>  outstandingExecutionMethods = new HashMap<String, WsMethod>();
+    //only of dependencies with request_response type
 	private Map<Integer, WsMethod>  outstandingExecutionMethods = new HashMap<Integer, WsMethod>();//< idWsRequest, wsmethod >
-	//private Map<Integer, Map<Integer, WsRequest>> outstandingResponsesOfDependentRequests = new HashMap<Integer, Map<Integer,WsRequest>>();
 	
 	
 	public WorkerThread(String[] mainArgs, Host host) {
@@ -142,23 +141,30 @@ public class WorkerThread extends Process {
 				//Msg.info("WorkerThread: parentrequest id: "+parentRequest.getId());
 
 				
-				//Msg.info("WorkerThread:handling recieved response: 
+				//Msg.info("WorkerThread:handling received response: 
 				//response of a dependent method from a current request(responseTask.requestServed)?
 				if(  parentRequest!=null &&  responseTask.requestServed.done ){ //
-					ManagerRequest managerRequest = chorInstance.getManagerRequest();
+
 					Msg.info("WorkerThread: It was completed the dependency: "+responseTask.serviceName+":"+responseTask.serviceMethod);
 					//next, execute or waiting to complete the another request dependencies according to gateway
-					managerRequest.notifyDependentTaskConclusion(responseTask.requestServed);
+					ManagerRequest managerRequest = chorInstance.getManagerRequest();
+					managerRequest.notifyDependentTaskConclusion(responseTask.requestServed);//
 					
 					if(managerRequest.areCompletedRequestDependencies(parentRequest)){ //complete and ready to finally be executed
 						Msg.info("WorkerThread: "+parentRequest.serviceName+":"+parentRequest.serviceMethod+" ready to execute, finally");
 						WsMethod pendingMethod = this.outstandingExecutionMethods.get(parentRequest.id);
 						if(pendingMethod==null)
 							Msg.info("WorkerThread: There is no pending method of request "+parentRequest.id);
-						directExecuteMethod(parentRequest, pendingMethod);
+						directExecuteMethod(parentRequest, pendingMethod);//executing
+						managerRequest.notifyTaskConclusion(parentRequest);//notifying
+					}
+					else{
+						//waiting completion of remainder dependencies 
 					}
 					
-					//this.outstandingResponsesOfDependentRequests.get(responseTask.requestServed.id).
+				}
+				else{// request don't completed
+					
 				}
 				
 			}
@@ -170,7 +176,7 @@ public class WorkerThread extends Process {
 
 	
 	private void directExecuteMethod(WsRequest request, WsMethod method) throws HostFailureException, TaskCancelledException, TransferFailureException, TimeoutException {
-		// TODO Auto-generated method stub
+
 		method.execute();
 		//currentMethod.setWasExecuted(true);
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
@@ -178,7 +184,7 @@ public class WorkerThread extends Process {
 		String responseMailbox = request.senderMailbox;
 		double outputFileSize = method.getOutputFileSizeInBytes();
 		sendResponseTask(request, responseMailbox, outputFileSize);//currently send directly to a Service Invoker
-		this.outstandingExecutionMethods.remove(request.id);
+		this.outstandingExecutionMethods.remove(request.getId());
 		//but should be to send to a Service, and from there to send to a ServiceInvoker
 	}
 
@@ -229,10 +235,11 @@ public class WorkerThread extends Process {
 						handleSequenceFlow(so,currentMethod, request);
 				}
 			}	
-			
-			this.outstandingExecutionMethods.put(request.getId(), currentMethod);
+			//only when all requests are asynchronous
+			//this.outstandingExecutionMethods.put(request.getId(), currentMethod);
 		}
-		else{//there is no dependencies 
+		else{//there is no dependencies
+			System.out.println("Request without dependencies, so execute it ");
 			directExecuteMethod(request, currentMethod);
 		}
 	}//end 
@@ -255,29 +262,27 @@ public class WorkerThread extends Process {
 		//chorInstance.getManagerRequest().addRequest(requestDependentTask);//it was maked at Service redirecting
 		
 		System.out.println("ManagerRequest: current size: "+chorInstance.getManagerRequest().getRequests().size() );
-		System.out.println("ManagerRequest: current: "+chorInstance.getManagerRequest().getRequests() );
-		
 
-		redirectTask(requestDependentTask);//redirecting Task to Service
 		
-		//String serviceOperationKey= dependentMethod.getServiceName()+"_"+dependentMethod.getName();
-		//if( currentMethod.getMIType(serviceOperationKey)==MessageInteractionType.Request_Response ){
-		if( so.getMiTypeDependencies().get(dependentMethod.getName())==MessageInteractionType.Request_Response){
+		
+		String serviceOperationKey= dependentMethod.getServiceName()+"_"+dependentMethod.getName();
+		
+		
+		//if( so.getMiTypeDependencies().get(dependentMethod.getName())==MessageInteractionType.Request_Response){
+		if( so.getMiTypeDependencies().get(serviceOperationKey)==MessageInteractionType.Request_Response){
 
 			Msg.info("Waiting a response of dependent service ");
-			//String outstandingRequestKey=  currentRequest.instanceId+"_cu" ;
+
 			//adding dependency
 			chorInstance.getManagerRequest().addDependency(currentRequest, requestDependentTask);//in order to waiting a response			
-			
-			//this.outstandingExecutionRequests.put(currentRequest.id,currentRequest);
-			//addOutstandingResponse(currentRequest, requestDependentTask);
-			
-			
+			this.outstandingExecutionMethods.put(currentRequest.getId(), currentMethod);
+			redirectTask(requestDependentTask);//redirecting Task to Service
 		}
 		else{
-			Msg.info("No Waiting, then can be execute ");
+			Msg.info("No Waiting, only was needed send and there is no response (async), then can be execute ");
 			//Only Request with no response: then to execute currentRequest
-			//What to do when the interaction is asyn?????
+			//To improve this implementation, to think in this question: What to do when the interaction is async?
+			redirectTask(requestDependentTask);//redirecting Task to Service
 			directExecuteMethod(currentRequest, currentMethod);
 		}
 	}
@@ -320,9 +325,7 @@ public class WorkerThread extends Process {
 			HostFailureException, TimeoutException {
 		ResponseTask response = new ResponseTask(outputFileSize);
 		response.serviceName = wsName;
-		//response.instanceId = request.instanceId;
 		response.instanceId = request.getId();
-		//response.setCompositionId  ?
 		response.requestServed = request;
 		response.serviceMethod = request.serviceMethod;
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
@@ -357,6 +360,7 @@ public class WorkerThread extends Process {
 			TimeoutException {
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
 			Msg.info("WorkerThread: Redirecting to service " + myServiceMailbox);
+		System.out.println("Trying to send to "+myServiceMailbox);
 		task.send(myServiceMailbox);
 
 	}

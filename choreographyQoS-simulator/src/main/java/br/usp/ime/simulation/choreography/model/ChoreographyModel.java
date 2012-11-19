@@ -51,10 +51,12 @@ public class ChoreographyModel {
 		parser.generateChoreographyModel();
 	}
 	
-	public static ServiceOperation findServiceOperation(String servicename, String operationName){
+	public static ServiceOperation findServiceOperation(String servicename, String serviceOperationName){
 		if(roleServices.get(servicename)==null)
 			return null;
-		return roleServices.get(servicename).findServiceOperationByName(operationName);
+		//String serviceOperationKey = servicename+"_"+serviceOperationName;
+		//return roleServices.get(servicename).findServiceOperationByKey(serviceOperationKey);
+		return roleServices.get(servicename).findServiceOperationByName(serviceOperationName);
 	}
 	
 	

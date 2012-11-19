@@ -117,6 +117,12 @@ public class ManagerRequest {
 		}
 		
 	}
+
+	public void notifyTaskConclusion(WsRequest request) {
+		this.dependsOn.remove(request);//removing all dependencies
+		//this.isDependencyOf
+		this.requests.remove(request.getId());
+	}
 	
 	public void notifyDependentTaskConclusion(WsRequest dependency) {
 		
@@ -131,9 +137,8 @@ public class ManagerRequest {
 			
 			markDependencyAsDone(parent, dependency);
 			this.requests.remove(dependency);
-			this.isDependencyOf.remove(dependency);
+			this.isDependencyOf.remove(dependency).getId();
 			
-			//}
 		}
 		else{
 			Msg.info("Could not find inputted request (" + dependency.toString() + ")");
@@ -149,6 +154,7 @@ public class ManagerRequest {
 		dependsOn.get(parent).get(dependency.getId()).done=true;
 		
 	}
+
 
 		
 	private void removeThisRequestsDependencyOn(WsRequest parent, WsRequest dependency) {
@@ -179,5 +185,7 @@ public class ManagerRequest {
 	public void setIsDependencyOf(Map<Integer, WsRequest> isDependencyOf) {
 		this.isDependencyOf = isDependencyOf;
 	}
+
+
 	
 }

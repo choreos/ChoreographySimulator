@@ -45,14 +45,23 @@ public class ServiceOperation{
 		//if(this.dependenciesGroupsByMIType.get(miType)==null)
 			//this.dependenciesGroupsByMIType.put(miType, new HashMap<String, ServiceOperation>());
 			
-		this.dependencies.put(so.name, so);
-		//this.dependencies.put(so.service.getName(), so);
-		this.miTypeDependencies.put(so.name, miType);
+		//this.dependencies.put(so.name, so);
+		//this.miTypeDependencies.put(so.name, miType);
+		this.dependencies.put(so.getKey(), so);
+		this.miTypeDependencies.put(so.getKey(), miType);
+		
 		//this.dependenciesGroupsByMIType.get(miType).put(so.getName(), so);
 	}
 	
 	
-	
+	/*
+	 * return a Key to be used as key in the dependencies map
+	 */
+	public String getKey() {
+		return this.getService().getName()+"_"+this.getName();
+	}
+
+
 	public Map<String, ServiceOperation> getDependencies() {
 		return dependencies;
 	}
@@ -75,7 +84,7 @@ public class ServiceOperation{
 
 
 	public String getId() {
-		return this.service.getId()+"_"+this.name;
+		return this.service.getId()+"_"+this.getService().getName()+"_"+this.name;
 	}
 	
 	public Service getService() {

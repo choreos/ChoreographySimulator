@@ -1,0 +1,1 @@
+java -cp ./target/classes/:lib/jdom-2.0.3.jar:lib/commons-math3-3.0.jar:$SIMGRID_JAVA_ROOT/java/simgrid.jar br.usp.ime.simulation.Simulation orchestration_platform.xml  orchestration_deployment.xml orchestration_specification.xml  $1

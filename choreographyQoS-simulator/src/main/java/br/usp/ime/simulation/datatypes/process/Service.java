@@ -36,7 +36,7 @@ public class Service extends ServiceInvoker {
 	private String[] mainArgs;
 	private String myMailbox;
 	private boolean ended = false;
-	private int lastUsedMailboxIndex=0;
+	private volatile int lastUsedMailboxIndex=0;
 
 	public Service(Host host, String name, String[]args) {
 		super(host,name,args);
@@ -48,30 +48,14 @@ public class Service extends ServiceInvoker {
 			System.exit(1);
 		}
 
-		
-		/*if (((args.length - 2) % 3) != 0) {
-			Msg.info("Each method must have 4 parameters: a name, computing size and output file size");
-			System.exit(1);
-		}*/
-
-		//there will be no verifying of args
-		
-		
 		int workersNumber = Integer.parseInt(args[0]);
 		this.wsName = args[1];
 		
 		mainArgs=Arrays.copyOf(args, args.length+2);
-		
 
 		myMailbox = "WS_" + wsName + "_at_" + getHost().getName();
 		mainArgs[mainArgs.length-2]= "END";
 		mainArgs[mainArgs.length-1]= myMailbox;
-		
-		
-		
-		//System.out.println("mainArgs size : "+mainArgs.length+" from "+args.length);
-		//System.out.println("mailbox: "+mainArgs[args.length]);
-		//System.out.println("END: "+mainArgs[args.length+1]);
 		
 		
 		ServiceRegistry.getInstance().putServiceMailbox(myMailbox);//service registring
@@ -82,13 +66,16 @@ public class Service extends ServiceInvoker {
 		createWorkerThreads(workersNumber);
 
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
-			Msg.info("Receiving on '" + myMailbox + "' from Service '" + wsName
+			Msg.info("["+this.wsName+"] Receiving on '" + myMailbox + "' from Service '" + wsName
 					+ "'");
 
 		redirectTasks();
 
 	}
 
+	/*
+	 * Critic method, it's responsible for message receiving and sending too  
+	 */
 	private void redirectTasks() {
 		//int i = 0;
 		Task currentTask;
@@ -97,6 +84,8 @@ public class Service extends ServiceInvoker {
 				double startTime = Msg.getClock();
 				//calculate here a response time
 				currentTask = receiveNewTask();//trying to receive taks
+				if(currentTask== null)
+					Msg.info(">>>>>>>>>><["+this.wsName+"]: task received is NULL!!>>>>>>>>>>>>");
 				processTask( currentTask);
 			} catch (TransferFailureException e) {
 				System.out.println("Transfer Exception ");
@@ -107,6 +96,9 @@ public class Service extends ServiceInvoker {
 			} catch (TimeoutException e) {
 				System.out.println("Timeout Exception ");
 				e.printStackTrace();
+			} catch (MsgException e) {
+				System.out.println("MSG Exception ");
+				e.printStackTrace();
 			}
 			
 			if (ended)
@@ -115,39 +107,40 @@ public class Service extends ServiceInvoker {
 	}
 
 	private void processTask(Task currentTask)
-			throws TransferFailureException, HostFailureException,
-			TimeoutException {
+			throws MsgException {
+		
 		if (currentTask instanceof WsRequest) {
 			//verifying if it's a new Request
 			WsRequest currentRequest = ((WsRequest)currentTask);
 			
 			String mailbox;
-			System.out.println("Service request to : "+currentRequest.serviceName);
-
 		
 			//it isn't new request, then it's a dependency to be executed at other Service,  from a workthread (so same service)	
 			if( !currentRequest.serviceName.equals(this.wsName) ){
-				Msg.info("Service: finding a ready service for a dependent request: "+currentRequest.getId()+" to service "+currentRequest.serviceName);				
 				mailbox = ServiceRegistry.getInstance().findServiceMailBoxByServiceName(currentRequest.serviceName);
+				if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES){
+					Msg.info("["+this.wsName+"]-- Request but, Finding a ready service for a dependent request: "+currentRequest+
+							" created by "+currentRequest.senderMailbox+" Redirecting to " + mailbox);
+				}
+				invokeWsMethod(currentRequest,currentRequest.senderMailbox, mailbox);
 			}
-			else// simple request from other Service 
+			else{// simple request from other Service 
 				mailbox = getNextMailbox();
-			
-			if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
-				Msg.info("Request Task received at service " + wsName
-						+ ". Redirecting to " + mailbox);
-			redirectTask(currentTask, mailbox);
+				if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
+					Msg.info("["+this.wsName+"]Request Task received:  " + currentRequest+ ". Redirecting to " + mailbox);
+				redirectTask(currentTask, mailbox);
+			}
 		}
 		else if (currentTask instanceof ResponseTask) {
 			//TODO: redirect to respective worker to complete the initial request
 			String initialRequesterMailbox = ((ResponseTask) currentTask).getInitialSender();
-			Msg.info("Response Task received at service " + wsName
+			Msg.info("["+this.wsName+"] Response Task received at service " + wsName
 					+ ". Redirecting to " + initialRequesterMailbox+ " to complete execution");
 			redirectTask(currentTask, initialRequesterMailbox);
 		}
 		else if (currentTask instanceof FinalizeTask) {
 			if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
-				Msg.info("Received Finalize. So this is WS_" + wsName + "_at_"
+				Msg.info("["+this.wsName+"] Received Finalize. So this is WS_" + wsName + "_at_"
 						+ getHost().getName() + " saying Goodbye!");
 
 			finalizeWorkers();
@@ -155,13 +148,13 @@ public class Service extends ServiceInvoker {
 		}
 	}
 
-	//private String getNextMailbox(int lastUsedMailboxIndex) {
+
 	private String getNextMailbox() {
-		int j;
-		if (this.lastUsedMailboxIndex >= workerMailboxes.size())
-			lastUsedMailboxIndex = 0;
-		else
+		//int j;
+		if (  this.lastUsedMailboxIndex < (workerMailboxes.size()-1)  )
 			lastUsedMailboxIndex++;
+		else
+			lastUsedMailboxIndex = 0;
 
 		String mailbox = workerMailboxes.get(lastUsedMailboxIndex);
 
@@ -172,7 +165,7 @@ public class Service extends ServiceInvoker {
 			HostFailureException, TimeoutException {
 		Task currentTask = Task.receive(myMailbox);
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
-			Msg.info("Received task from " + currentTask.getSource().getName());
+			Msg.info("["+this.wsName+"] Received task from " + currentTask.getSource().getName());
 		return currentTask;
 	}
 
@@ -183,7 +176,7 @@ public class Service extends ServiceInvoker {
 			Msg.info("Redirecting to worker thread at " + mailbox);
 		
 		try{
-		task.send(mailbox);
+			task.send(mailbox);
 		}catch(Exception e){
 			System.out.println("Error sending: "+ e.getMessage());
 			e.printStackTrace();

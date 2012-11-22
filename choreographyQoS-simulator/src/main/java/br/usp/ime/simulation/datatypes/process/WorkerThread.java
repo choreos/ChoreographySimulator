@@ -64,16 +64,13 @@ public class WorkerThread extends Process {
 	}
 
 	private void createWebMethods(String[] args) {
-		//for (int i = 2; i < args.length; i += 3) {
-		//for (int i = 2; i < args.length-1; i += 3) {
-			//createMethod(this.wsName, args[i], args[i + 1], args[i + 2]);
-		//}
-		System.out.println("Args lenght: "+args.length);
-		System.out.println("Arg["+0+"]= "+args[0]);
-		System.out.println("Arg["+1+"]= "+args[1]);
-		System.out.println("Arg["+(args.length-2)+"]= "+args[args.length-2]);
-		System.out.println("Arg["+(args.length-1)+"]= "+args[args.length-1]);
-		
+
+//		System.out.println("Args lenght: "+args.length);
+//		System.out.println("Arg["+0+"]= "+args[0]);
+//		System.out.println("Arg["+1+"]= "+args[1]);
+//		System.out.println("Arg["+(args.length-2)+"]= "+args[args.length-2]);
+//		System.out.println("Arg["+(args.length-1)+"]= "+args[args.length-1]);
+//		
 		
 		for (int i = 2; i < args.length; ) {
 			System.out.println("Arg["+i+"]= "+args[i]);
@@ -113,19 +110,18 @@ public class WorkerThread extends Process {
 			double startTime = Msg.getClock();
 			Task task = Task.receive(myMailbox);
 			
-			if (ControlVariables.DEBUG
-					|| ControlVariables.PRINT_TASK_TRANSMISSION)
-				Msg.info("WorkerThread: Received task, sender " + task.getSender());
+			//if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
+				Msg.info("["+this.myMailbox+"] Received task, sender " + task.getSource().getName());//etSender());
 			if (task instanceof WsRequest) {
-				Msg.info("WorkerThread: task instanceof WsRequest, to execute " );
-				WsRequest wsRequest = (WsRequest) task;
 				
+				WsRequest wsRequest = (WsRequest) task;
+				Msg.info("["+this.myMailbox+"] Receiving the request  "+wsRequest+" , to execute " );
 				wsRequest.startTime = startTime;
 				executeMethod(wsRequest);
 			}
 			else if(task instanceof ResponseTask){
 				//TODO receive dependent response Task (ok or not) to complete outstanding execution
-				Msg.info("WorkerThread: task instanceof ResponseTask, so, verifying if there are dependencies" );
+				Msg.info("["+this.myMailbox+"] task instanceof ResponseTask, so, verifying if there are dependencies" );
 				ResponseTask responseTask = ((ResponseTask) task);
 				//if responseTask.requestServed.done==false ?
 
@@ -195,7 +191,8 @@ public class WorkerThread extends Process {
 	public void executeMethod(WsRequest request) throws MsgException {
 		
 		ChoreographyInstance chorInstance = ChoreographyMonitor.findChoreographyInstance(request.getCompositionId());
-		System.out.println("chorInstance ID is: " +chorInstance.getCompositionId());
+		System.out.println("chorInstance ID : " +chorInstance.getCompositionId()+", request: "+
+					request.id+":"+request.serviceName+"-"+request.getName()+ " ,  at "+this.myMailbox);
 		chorInstance.getManagerRequest().addRequest(request); //new request to execute
 		WsMethod currentMethod = requestWsMethodTask(request.serviceMethod);
 		
@@ -249,8 +246,8 @@ public class WorkerThread extends Process {
 	private void handleSequenceFlow(ServiceOperation so, WsMethod currentMethod, WsRequest currentRequest) throws TransferFailureException, HostFailureException, TimeoutException, TaskCancelledException {
 
 		System.out.println("Dependencies: "+currentMethod.getDependencies().size());
-		System.out.println("Dependencies SO: "+so.getDependencies().size());
-		System.out.println("current Method: "+currentMethod.getName()+" of service "+currentMethod.getServiceName());
+		//System.out.println("Dependencies SO: "+so.getDependencies().size());
+		//System.out.println("current Method: "+currentMethod.getName()+" of service "+currentMethod.getServiceName());
 		WsMethod dependentMethod = currentMethod.getDependencies().values().iterator().next();
 
 		WsRequest requestDependentTask = new WsRequest(dependentMethod.getServiceName(),
@@ -261,7 +258,7 @@ public class WorkerThread extends Process {
 		
 		//chorInstance.getManagerRequest().addRequest(requestDependentTask);//it was maked at Service redirecting
 		
-		System.out.println("ManagerRequest: current size: "+chorInstance.getManagerRequest().getRequests().size() );
+		System.out.println("ManagerRequest: current list: "+chorInstance.getManagerRequest().getRequests() );
 
 		
 		
@@ -271,7 +268,7 @@ public class WorkerThread extends Process {
 		//if( so.getMiTypeDependencies().get(dependentMethod.getName())==MessageInteractionType.Request_Response){
 		if( so.getMiTypeDependencies().get(serviceOperationKey)==MessageInteractionType.Request_Response){
 
-			Msg.info("Waiting a response of dependent service ");
+			Msg.info("["+this.myMailbox+"]"+" Waiting a response of dependent service for "+currentRequest+", new request: "+requestDependentTask.toString());
 
 			//adding dependency
 			chorInstance.getManagerRequest().addDependency(currentRequest, requestDependentTask);//in order to waiting a response			
@@ -359,8 +356,8 @@ public class WorkerThread extends Process {
 			throws TransferFailureException, HostFailureException,
 			TimeoutException {
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
-			Msg.info("WorkerThread: Redirecting to service " + myServiceMailbox);
-		System.out.println("Trying to send to "+myServiceMailbox);
+			Msg.info("WorkerThread: Redirecting to service" + myServiceMailbox);
+		//System.out.println("Trying to send to "+myServiceMailbox);
 		task.send(myServiceMailbox);
 
 	}

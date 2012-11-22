@@ -26,9 +26,11 @@
    <route src="iRMX" dst="Revoada" symmetrical="YES">
       <link_ctn id="100"/>
    </route>
-   <route src="Vincent" dst="Revoada" symmetrical="YES">
+
+   <route src="Revoada" dst="Vincent" symmetrical="YES">
       <link_ctn id="100"/>
    </route>
+
    <route src="Dali" dst="Revoada" symmetrical="YES">
       <link_ctn id="100"/>
    </route>

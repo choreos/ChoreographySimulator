@@ -70,7 +70,10 @@ public class WsRequest extends Task implements Serializable{
 	}
 
 	
-	
+	@Override
+	public String toString(){
+		return String.valueOf(this.id)+"_"+this.serviceName+"_"+this.serviceMethod;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;

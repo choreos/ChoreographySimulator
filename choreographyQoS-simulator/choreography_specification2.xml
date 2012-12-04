@@ -36,14 +36,14 @@
 			<target  service="WS4" name="method2"  type="REQUEST"  />
 			<gateway type="join" />
 		</interaction>  -->
-		<interaction name="interactionWS2-WS4" >
+		<!-- <interaction name="interactionWS2-WS4" >
 			<source service="WS2"  operation="method1"   />
 			<target service="WS4" operation="method3"    type="REQUEST_RESPONSE" />
-		</interaction>
-		<!--<interaction name="interactionWS5-WS2" >
-			<source service="WS5"  operation="method1"   />
-			<target service="WS2" operation="method3"    type="REQUEST_RESPONSE" />
 		</interaction> -->
+		<interaction name="interactionWS5-WS2" >
+			<source service="WS5"  operation="method2"   />
+			<target service="WS2" operation="method3"    type="REQUEST_RESPONSE" />
+		</interaction>
 		<!-- <interaction name="interactionWS1-WS2" >
 			<source service="WS1"  operation="method1"  />
 			<target service="WS2" operation="method3"    type="REQUEST_RESPONSE" />
@@ -52,9 +52,5 @@
 			<source service="WS3"  operation="method2"  />
 			<target service="WS5" operation="method2"    type="REQUEST_RESPONSE" />
 		</interaction>
-		<!--<interaction name="interactionWS5-WS1" >
-			<source service="WS5"  operation="method2"  />
-			<target service="WS1" operation="method2"    type="REQUEST" />
-		</interaction> -->
 	</interactions>
  </choreography>

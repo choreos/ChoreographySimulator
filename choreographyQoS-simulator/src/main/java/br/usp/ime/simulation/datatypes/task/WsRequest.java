@@ -15,6 +15,7 @@ import org.simgrid.msg.TimeoutException;
 import org.simgrid.msg.TransferFailureException;
 
 import biz.source_code.base64Coder.Base64Coder;
+import br.usp.ime.simulation.choreography.model.ChoreographyModel.MessageInteractionType;
 
 public class WsRequest extends Task implements Serializable{
 
@@ -33,6 +34,7 @@ public class WsRequest extends Task implements Serializable{
 	public String destination;
 	public double startTime;
 	private Long compositionId=null;
+	private MessageInteractionType messageInteraction;
 	
 
 	public int getId() {
@@ -51,6 +53,7 @@ public class WsRequest extends Task implements Serializable{
 		serviceMethod = wsMethod;
 		serviceName = wsName;
 		inputMessageSize = messageSize;
+		this.setMessageInteraction(MessageInteractionType.Request_Response);
 	}
 
 	public WsRequest(int id,String wsName, String wsMethod, double messageSize, String senderMailbox) {
@@ -126,5 +129,13 @@ public class WsRequest extends Task implements Serializable{
 
 	public void setCompositionId(Long compositionId) {
 		this.compositionId = compositionId;
+	}
+
+	public MessageInteractionType getMessageInteraction() {
+		return messageInteraction;
+	}
+
+	public void setMessageInteraction(MessageInteractionType messageInteraction) {
+		this.messageInteraction = messageInteraction;
 	}
 }

@@ -36,6 +36,11 @@ public class Service{
 
 
 	public ServiceOperation findServiceOperationByName(String operationName) {
+		ServiceOperation so = this.serviceOperations.get(operationName);
+		if(so==null){
+			System.out.println("Service Operation "+ operationName + " not found");
+			return null;
+		}
 		return this.serviceOperations.get(operationName);
 	}
 

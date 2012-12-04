@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -40,6 +41,8 @@ public class Choreographer extends ServiceInvoker {
 	private String entryServiceNameMethod="";
 	private Integer nro_requests=1;
 	private Log log = new Log();
+	
+	private List ListStartTimes = new ArrayList();
 	
 		
 	//public Choreographer(String[] mainArgs, Host host) {
@@ -112,7 +115,7 @@ public class Choreographer extends ServiceInvoker {
 			Double startTime = response.requestServed.startTime;
 			Double finishTime = Msg.getClock();
 			Statistics.statsResponseTime.addValue(finishTime-startTime);
-			log.record(startTime, finishTime,response.serviceMethod);
+			log.record(startTime, finishTime,response.requestServed.toString());
 			//log.record(start, finish,response.serviceMethod);
 			//System.out.println("TR: "+(finish-start));
 			//System.out.println("<"+ startTime+" , "+Msg.getClock()+">");
@@ -143,6 +146,9 @@ public class Choreographer extends ServiceInvoker {
 													,this.inputMessageSize ,this.myMailbox);
 			requestTask.setCompositionId(chorInstance.getCompositionId());
 			requestTask.startTime= Msg.getClock();
+			this.ListStartTimes.add(requestTask.startTime);
+			//this.ListStartTimes.add(System.currentTimeMillis());
+			//System.out.println("StartTime:"+requestTask.startTime);
 			invokeWsMethod(requestTask, myMailbox, entryMailbox);
 		}
 		
@@ -174,6 +180,9 @@ public class Choreographer extends ServiceInvoker {
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
 			Msg.info("Choreography is done. Bye!");
 
+		for(Object starTime: this.ListStartTimes){
+			System.out.println(" Startime: "+startTime);
+		}
 		ServiceRegistry.getInstance().reset();
 		this.log.close();
 		Statistics.closeDataset();

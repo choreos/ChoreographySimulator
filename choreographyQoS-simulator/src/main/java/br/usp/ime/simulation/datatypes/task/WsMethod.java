@@ -9,22 +9,15 @@ import br.usp.ime.simulation.choreography.model.ChoreographyModel.MessageInterac
 
 public class WsMethod extends Task {
 
-	private int computingSizeInMI;
+	//private int computingSizeInMI;
 	private double inputFileSizeInBytes;
 	private double outputFileSizeInBytes;
 	private String wsMethodName;
 	private String serviceName;
-	private Map<String, WsMethod> dependencies;//key : methodsName
+	private Map<String, WsMethod> dependencies;//key : servicename_methodName
 	
-	//private Map<String, WsMethod> executedDependencies;
-	private boolean isSynchronous;
+	//private boolean isSynchronous;
 	
-	
-	
-	//private GatewayType gateway;
-	//private Map<MessageInteractionType, String> miTypesDependencies;
-	
-	//private MessageInteractionType messageInteractionType;
 	
 	public WsMethod(String serviceName, String wsMethodName, double averageComputeDuration, double inputFileSize, double outputFileSize) {
 		super(wsMethodName, averageComputeDuration, (inputFileSize + outputFileSize));
@@ -32,8 +25,6 @@ public class WsMethod extends Task {
 			this.outputFileSizeInBytes = outputFileSize;
 			this.wsMethodName = wsMethodName;
 			this.serviceName = serviceName;
-			this.setSynchronous(true);
-			
 			this.dependencies = new HashMap<String, WsMethod>();
 		//this.miTypesDependencies = new HashMap<String, WsMethod.MessageInteractionType>();
 	}
@@ -47,11 +38,6 @@ public class WsMethod extends Task {
 		this.dependencies.put(methodName, Method);
 	}
 	
-	
-
-	public int getComputingSizeInMI() {
-		return computingSizeInMI;
-	}
 
 	public double getInputFileSizeInBytes() {
 		return inputFileSizeInBytes;
@@ -81,13 +67,6 @@ public class WsMethod extends Task {
 		return dependencies;
 	}
 
-	public boolean isSynchronous() {
-		return isSynchronous;
-	}
-
-	public void setSynchronous(boolean isSynchronous) {
-		this.isSynchronous = isSynchronous;
-	}
 
 	
 	

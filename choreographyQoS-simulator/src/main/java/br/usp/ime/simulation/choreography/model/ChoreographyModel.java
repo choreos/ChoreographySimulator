@@ -52,8 +52,10 @@ public class ChoreographyModel {
 	}
 	
 	public static ServiceOperation findServiceOperation(String servicename, String serviceOperationName){
-		if(roleServices.get(servicename)==null)
+		if(roleServices.get(servicename)==null){
+			System.out.println("Service "+servicename+" not found");
 			return null;
+		}
 		//String serviceOperationKey = servicename+"_"+serviceOperationName;
 		//return roleServices.get(servicename).findServiceOperationByKey(serviceOperationKey);
 		return roleServices.get(servicename).findServiceOperationByName(serviceOperationName);

@@ -66,6 +66,7 @@ public class WsRequestSender extends org.simgrid.msg.Process {
 		//clonerequest.startTime=wsrequest.startTime;
 		clonerequest.senderMailbox = wsrequest.senderMailbox;
 		clonerequest.destination = destination;
+		//clonerequest.startTime = wsrequest.startTime;
 		System.out.println("WsRequest: CompositionID: "+wsrequest.getCompositionId());
 		clonerequest.setCompositionId(wsrequest.getCompositionId());//correlationID
 		

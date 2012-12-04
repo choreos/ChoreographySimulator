@@ -10,6 +10,9 @@ import java.util.Set;
 import org.simgrid.msg.Msg;
 
 import br.usp.ime.simulation.datatypes.task.WsRequest;
+import br.usp.ime.simulation.monitoring.QoSInfo;
+import br.usp.ime.simulation.qos_model.QoSParameter;
+import br.usp.ime.simulation.qos_model.QoSParameter.QoSAttribute;
 
 public class ManagerRequest {
 	private Map<Integer, WsRequest> requests;
@@ -18,20 +21,18 @@ public class ManagerRequest {
 	//private Map<WsRequest, WsRequest> isDependencyOf;//only one parent
 	private Map<Integer, WsRequest> isDependencyOf;//only one parent
 
-	//private static ManagerRequest instance=null;
-	
-//	public static ManagerRequest getInstance(){
-//		if(instance==null)
-//			instance= new ManagerRequest();
-//		return instance;
-//	}
+	private Map<Integer, QoSInfo> qosInformations;//key : requestId
+	private Map<QoSInfo, Map<Integer, QoSInfo> >  qosInformationsDependencies;//depende de
 	
 
 	public ManagerRequest() {
-		dependsOn = new HashMap<WsRequest, Map<Integer,WsRequest>>();
-		//isDependencyOf = new HashMap<WsRequest, Map<Integer,WsRequest>>();
+		this.dependsOn = new HashMap<WsRequest, Map<Integer,WsRequest>>();
 		this.isDependencyOf = new HashMap<Integer, WsRequest>();//new HashMap<WsRequest, WsRequest>();
-		requests = new HashMap<Integer, WsRequest>();
+		this.requests = new HashMap<Integer, WsRequest>();
+		
+		this.qosInformations = new HashMap<Integer, QoSInfo>();
+		this.qosInformationsDependencies = new HashMap<QoSInfo, Map<Integer,QoSInfo>>();
+		
 	}
 
 	public void addRequest(WsRequest request) {
@@ -39,6 +40,11 @@ public class ManagerRequest {
 		dependsOn.put(request, new HashMap<Integer, WsRequest>() );
 		//isDependencyOf.put(request, new HashMap<Integer, WsRequest>() );
 		//this.isDependencyOf.put(request.getId(), null);
+		
+		QoSInfo qosInfo= new QoSInfo();
+		qosInfo.setRequest(request);
+		this.qosInformations.put(request.getId(), qosInfo);
+		this.qosInformationsDependencies.put(qosInfo, new HashMap<Integer, QoSInfo>());
 	}
 
 	public Map<Integer, WsRequest> getRequests() {
@@ -64,6 +70,15 @@ public class ManagerRequest {
 		//isDependencyOf.get(dependency).put(request.getId(),request);
 		//this.isDependencyOf.put(dependency, request);
 		this.isDependencyOf.put(dependency.getId(), request);
+		
+		if (qosInformations.get(request.getId())==null) {
+			Msg.info("Error adding dependency QoSInfo to non-existing request: "+request.getId());
+			return;
+		}
+		QoSInfo infoDependency = new QoSInfo();
+		infoDependency.setComposed(true);//that is, your attributes will be composed, accordingly
+		infoDependency.setRequest(request);
+		this.qosInformationsDependencies.get(  this.qosInformations.get(request.getId())  ).put(dependency.getId(),  infoDependency);
 	}
 
 	
@@ -186,6 +201,42 @@ public class ManagerRequest {
 		this.isDependencyOf = isDependencyOf;
 	}
 
+	/*
+	 * 
+	
+	public void setValueOfQoSParam(WsRequest request, QoSAttribute executionTime, Double value) {
+		
+		for (QoSInfo qos: this.qosInformations.keySet()){
+			if(qos.getRequest().getId()== request.getId())
+				qos.setQoSParameterValueOf(executionTime, value);
+		}
+	}*/
+
+	public QoSInfo getQoSInfoOf(WsRequest request){
+//		for (QoSInfo qos: this.qosInformationsDependencies.keySet()){
+//			if(qos.getRequest().getId()== request.getId())
+//				return qos;
+//		}
+		
+		return this.qosInformations.get(request.getId());
+	}
+	
+	public Map<Integer, QoSInfo> QoSInfoDependenciesOf(WsRequest request){
+		QoSInfo qosInfo= this.qosInformations.get(request.getId());
+		if(qosInfo==null)
+			return null;
+		return this.qosInformationsDependencies.get(qosInfo);
+	}
+	
+	
+//	
+//public void setValueOfQoSParam(WsRequest request, QoSParameter param) {
+//		
+//		for (QoSInfo qos: this.qosInformations.keySet()){
+//			if(qos.getRequest().getId()== request.getId())
+//				qos.setQoSParameterValueOf(param.getQoSAttribute(), param);
+//		}
+//	}
 
 	
 }

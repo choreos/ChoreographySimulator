@@ -15,7 +15,7 @@ public class ServiceOperation{
 	private Service service;
 	private String name;
 	
-	private GatewayType gatewayTypeToDependencies=null;
+	private GatewayType gatewayTypeToDependencies;
 	//private List<ServiceOperation> dependencies =new ArrayList<ServiceOperation>();//K=servicedependencyId+"_"+serviceOperationName
 	private Map<String, ServiceOperation> dependencies =new HashMap<String, ServiceOperation>();
 	//private Map<MessageInteractionType, Map<String, ServiceOperation> > dependenciesGroupsByMIType;//
@@ -42,6 +42,11 @@ public class ServiceOperation{
 	
 	public void addDependencies(ServiceOperation so, MessageInteractionType miType){
 		
+		this.addDependencies(so, miType,GatewayType.SEQUENCE_FLOW);
+	}
+	
+	public void addDependencies(ServiceOperation so, MessageInteractionType miType, GatewayType gatewayToDependency){
+		
 		//if(this.dependenciesGroupsByMIType.get(miType)==null)
 			//this.dependenciesGroupsByMIType.put(miType, new HashMap<String, ServiceOperation>());
 			
@@ -49,8 +54,8 @@ public class ServiceOperation{
 		//this.miTypeDependencies.put(so.name, miType);
 		this.dependencies.put(so.getKey(), so);
 		this.miTypeDependencies.put(so.getKey(), miType);
+		this.gatewayTypeToDependencies=gatewayToDependency;
 		
-		//this.dependenciesGroupsByMIType.get(miType).put(so.getName(), so);
 	}
 	
 	

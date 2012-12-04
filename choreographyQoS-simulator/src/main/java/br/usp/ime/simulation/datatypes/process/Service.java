@@ -29,8 +29,7 @@ import commTime.FinalizeTask;
 //public class Service extends Process {
 public class Service extends ServiceInvoker {
 
-	private HashMap<String, WsMethod> methods = new HashMap<String, WsMethod>();
-	private Host host;
+	//private HashMap<String, WsMethod> methods = new HashMap<String, WsMethod>();
 	private String wsName;
 	private List<String> workerMailboxes;
 	private String[] mainArgs;
@@ -150,7 +149,6 @@ public class Service extends ServiceInvoker {
 
 
 	private String getNextMailbox() {
-		//int j;
 		if (  this.lastUsedMailboxIndex < (workerMailboxes.size()-1)  )
 			lastUsedMailboxIndex++;
 		else

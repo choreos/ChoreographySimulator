@@ -25,6 +25,9 @@ import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
 import br.usp.ime.simulation.monitoring.ChoreographyMonitor;
+import br.usp.ime.simulation.monitoring.QoSInfo;
+import br.usp.ime.simulation.qos_model.QoSParameter;
+import br.usp.ime.simulation.qos_model.QoSParameter.QoSAttribute;
 import br.usp.ime.simulation.choreography.ManagerRequest;
 
 import commTime.FinalizeTask;
@@ -63,15 +66,10 @@ public class WorkerThread extends Process {
 
 	}
 
+	/*
+	 * 
+	 */
 	private void createWebMethods(String[] args) {
-
-//		System.out.println("Args lenght: "+args.length);
-//		System.out.println("Arg["+0+"]= "+args[0]);
-//		System.out.println("Arg["+1+"]= "+args[1]);
-//		System.out.println("Arg["+(args.length-2)+"]= "+args[args.length-2]);
-//		System.out.println("Arg["+(args.length-1)+"]= "+args[args.length-1]);
-//		
-		
 		for (int i = 2; i < args.length; ) {
 			System.out.println("Arg["+i+"]= "+args[i]);
 			if( !args[i].equals("method") ){
@@ -80,9 +78,8 @@ public class WorkerThread extends Process {
 			}	
 			WsMethod currentMethod= createMethod(this.wsName, args[i+1], args[i + 2], args[i + 3]);
 			this.methods.put(currentMethod.getName(), currentMethod);
-			
 			i=i+4;
-			System.out.println("Arg["+i+"]= "+args[i]);
+			//System.out.println("Arg["+i+"]= "+args[i]);
 			
 			if(args[i].equals("dependency")){//only a single dependency
 				System.out.println("Have dependency");
@@ -99,15 +96,15 @@ public class WorkerThread extends Process {
 				break;
 			}	
 		}
-			
-		
-		
 	}
-
+	
+	/*
+	 * 
+	 */
 	private void workerThreadExecution() throws TransferFailureException,
 			HostFailureException, TimeoutException, MsgException {
 		while (true) {
-			double startTime = Msg.getClock();
+			//double startTime = Msg.getClock();
 			Task task = Task.receive(myMailbox);
 			
 			//if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
@@ -125,62 +122,176 @@ public class WorkerThread extends Process {
 				ResponseTask responseTask = ((ResponseTask) task);
 				//if responseTask.requestServed.done==false ?
 
-				//if(outstandingExecutionRequests.get( responseTask.requestServed.getId() )!=null){//
-				//if(outstandingExecutionRequests.get( responseTask.requestServed.getId() )!=null){////response of a dependent method from a current request?
-
-				//Msg.info("WorkerThread: original request of response: "+responseTask.requestServed.getId());
 				ChoreographyInstance chorInstance= ChoreographyMonitor.findChoreographyInstance(responseTask.requestServed.getCompositionId());
 				//Msg.info("WorkerThread: chorInstance: "+chorInstance.getCompositionId());
 				
 				
-				WsRequest parentRequest= chorInstance.getManagerRequest().getParentDependency(responseTask.requestServed);
+				ManagerRequest managerRequest =chorInstance.getManagerRequest();
+				WsRequest parentRequest= managerRequest.getParentDependency(responseTask.requestServed);
 				//Msg.info("WorkerThread: parentrequest id: "+parentRequest.getId());
 
-				
-				//Msg.info("WorkerThread:handling received response: 
-				//response of a dependent method from a current request(responseTask.requestServed)?
-				if(  parentRequest!=null &&  responseTask.requestServed.done ){ //
-
-					Msg.info("WorkerThread: It was completed the dependency: "+responseTask.serviceName+":"+responseTask.serviceMethod);
-					//next, execute or waiting to complete the another request dependencies according to gateway
-					ManagerRequest managerRequest = chorInstance.getManagerRequest();
-					managerRequest.notifyDependentTaskConclusion(responseTask.requestServed);//
-					
-					if(managerRequest.areCompletedRequestDependencies(parentRequest)){ //complete and ready to finally be executed
-						Msg.info("WorkerThread: "+parentRequest.serviceName+":"+parentRequest.serviceMethod+" ready to execute, finally");
-						WsMethod pendingMethod = this.outstandingExecutionMethods.get(parentRequest.id);
-						if(pendingMethod==null)
-							Msg.info("WorkerThread: There is no pending method of request "+parentRequest.id);
-						directExecuteMethod(parentRequest, pendingMethod);//executing
-						managerRequest.notifyTaskConclusion(parentRequest);//notifying
-					}
-					else{
-						//waiting completion of remainder dependencies 
-					}
-					
+				System.out.println("Parent request: Service name= "+parentRequest.serviceName+" , Service Method = "+parentRequest.serviceMethod);
+				ServiceOperation so = ChoreographyModel.findServiceOperation(parentRequest.serviceName.trim(), parentRequest.serviceMethod.trim());
+				System.out.println("So= "+so.getName());
+				//The Inclusive or join gateways is implicit for now for REQUEST_RESPONSE interactions
+				switch(so.getGatewayTypeToDependencies()){
+				//switch(parentRequest.){
+					case SEQUENCE_FLOW:
+						Msg.info("WorkerThread: Response from SEQUENCE_FLOW" );
+						handleResponseParallelAndSequenceGateway(so, responseTask, parentRequest, managerRequest);
+						break;
+					case  EXCLUSIVE://data-based
+						Msg.info("WorkerThread: Response for EXCLUSIVE " );
+						 handleResponseExclusiveGateway(so, responseTask, parentRequest, managerRequest);
+						 break;
+					case PARALLEL:
+						Msg.info("WorkerThread: Response for PARALLEL " );
+						handleResponseParallelAndSequenceGateway(so, responseTask, parentRequest, managerRequest);
+						break;
+					//case INCLUSIVE:
+						//Msg.info("WorkerThread: INCLUSIVE " );
+						//TODO
+						//break;
+					default :
+						Msg.info("WorkerThread: response for SEQUENCE (default)" );
+						//handleSequenceFlow(so,currentMethod, request);
+						handleResponseParallelAndSequenceGateway(so, responseTask, parentRequest, managerRequest);
 				}
-				else{// request don't completed
-					
-				}
-				
 			}
-
-			else if (task instanceof FinalizeTask)
-				break;
-		}
+			else if (task instanceof FinalizeTask){
+				    //this.kill();
+					break;
+			}
+		}//end of while
 	}
 
 	
-	private void directExecuteMethod(WsRequest request, WsMethod method) throws HostFailureException, TaskCancelledException, TransferFailureException, TimeoutException {
+	/*
+	 * 
+	 */
+	private void handleResponseParallelAndSequenceGateway(ServiceOperation so,
+			ResponseTask responseTask, WsRequest parentRequest, ManagerRequest managerRequest) throws HostFailureException, TaskCancelledException, TransferFailureException, TimeoutException {
+		//Msg.info("WorkerThread:handling received response: 
+		//response of a dependent method from a current request(responseTask.requestServed)?
+		if(  parentRequest!=null &&  responseTask.requestServed.done ){ //
 
+			Msg.info("WorkerThread: It was completed the dependency: "+responseTask.serviceName+":"+responseTask.serviceMethod);
+			//next, execute or waiting to complete the another request dependencies according to gateway
+			managerRequest.notifyDependentTaskConclusion(responseTask.requestServed);//
+			
+			if(managerRequest.areCompletedRequestDependencies(parentRequest)){ //complete and ready to finally be executed
+				Msg.info("WorkerThread: "+parentRequest.serviceName+":"+parentRequest.serviceMethod+" ready to execute, finally");
+				WsMethod pendingMethod = this.outstandingExecutionMethods.get(parentRequest.id);
+				if(pendingMethod==null)
+					Msg.info("WorkerThread: There is no pending method of request "+parentRequest.id);
+
+				// >>> QoS measurements // Event #3 (receiving response of dependent service)
+				//getting time response of first response
+				QoSInfo qosInfoDependency = managerRequest.getQoSInfoOf(responseTask.requestServed);
+				//TIME RESPONSE of QoSInfo dependent
+				Double dependentResponseTime = Msg.getClock() - responseTask.requestServed.startTime; //Double endTime = Msg.getClock();
+				QoSParameter qosResponseTime = new QoSParameter(QoSAttribute.RESPONSE_TIME);
+				qosResponseTime.setValue(dependentResponseTime);
+				qosInfoDependency.setQoSParamInResponseOf(QoSAttribute.RESPONSE_TIME, qosResponseTime);//internally knows if is composed
+				Msg.info("Event 3: Dependent Response time: <"+dependentResponseTime+">");
+				
+				// >>> QoS measurements // Event #4 (executing and sending response to original consumer)
+				QoSInfo qosInfoParent = managerRequest.getQoSInfoOf(parentRequest);
+				Double partialExecutionTime	= directExecuteMethod(parentRequest, pendingMethod);//executing
+				Double currentExecutionTime = partialExecutionTime+dependentResponseTime;
+				QoSParameter qosCurrentExecutionTime = new QoSParameter(QoSAttribute.EXECUTION_TIME);
+				qosResponseTime.setValue(currentExecutionTime);
+				qosInfoParent.setQoSParamInRequestOf(QoSAttribute.EXECUTION_TIME, qosCurrentExecutionTime);//current execution time
+				managerRequest.notifyTaskConclusion(parentRequest);//notifying
+				Msg.info("Event 4: partial Execution time: <"+partialExecutionTime+">");
+				Msg.info("Event 4: Current Execution time: <"+currentExecutionTime+">");
+				
+			}
+			else{
+				//waiting completion of remainder dependencies 
+			}
+			
+		}
+		else{// request don't completed
+			
+		}
+		
+	}
+
+	
+	
+	/*
+	 * 
+	 */
+	private void handleResponseExclusiveGateway(ServiceOperation so,
+			ResponseTask responseTask, WsRequest parentRequest, ManagerRequest managerRequest) throws HostFailureException, TaskCancelledException, TransferFailureException, TimeoutException {
+		//Msg.info("WorkerThread:handling received response: 
+		//response of a dependent method from a current request(responseTask.requestServed)?
+		if(  parentRequest!=null &&  responseTask.requestServed.done ){ //
+
+			Msg.info("WorkerThread: It was completed the dependency: "+responseTask.serviceName+":"+responseTask.serviceMethod);
+			//next, execute or waiting to complete the another request dependencies according to gateway
+			managerRequest.notifyDependentTaskConclusion(responseTask.requestServed);//
+			
+			Msg.info("WorkerThread-EXCLUSIVE: "+parentRequest.serviceName+":"+parentRequest.serviceMethod+" ready to execute, finally");
+			WsMethod pendingMethod = this.outstandingExecutionMethods.get(parentRequest.id);
+			
+			if(pendingMethod==null)
+				Msg.info("WorkerThread: There is no pending method of request "+parentRequest.id);
+			
+			// >>> QoS measurements // Event #3 (receiving response of dependent service)
+			//getting time response of first response
+			QoSInfo qosInfoDependency = managerRequest.getQoSInfoOf(responseTask.requestServed);
+			//TIME RESPONSE of QoSInfo dependent
+			Double dependentResponseTime = Msg.getClock() - responseTask.requestServed.startTime; //Double endTime = Msg.getClock();
+			QoSParameter qosResponseTime = new QoSParameter(QoSAttribute.RESPONSE_TIME);
+			qosResponseTime.setValue(dependentResponseTime);
+			qosInfoDependency.setQoSParamInResponseOf(QoSAttribute.RESPONSE_TIME, qosResponseTime);//internally knows if is composed
+			Msg.info("Event 4: Dependent Response time: <"+dependentResponseTime+">");
+			
+			// >>> QoS measurements // Event #4 (executing and sending response to original consumer)
+			QoSInfo qosInfoParent = managerRequest.getQoSInfoOf(parentRequest);
+			Double partialExecutionTime	= directExecuteMethod(parentRequest, pendingMethod);//executing
+			Double currentExecutionTime = partialExecutionTime+dependentResponseTime;
+			QoSParameter qosCurrentExecutionTime = new QoSParameter(QoSAttribute.EXECUTION_TIME);
+			qosResponseTime.setValue(currentExecutionTime);
+			qosInfoParent.setQoSParamInRequestOf(QoSAttribute.EXECUTION_TIME, qosCurrentExecutionTime);//current execution time
+			managerRequest.notifyTaskConclusion(parentRequest);//notifying
+			Msg.info("Event 4: partial Execution time: <"+partialExecutionTime+">");
+			Msg.info("Event 4: Current Execution time: <"+currentExecutionTime+">");
+			
+		}
+		else{// request don't completed
+			
+		}
+		
+	}
+
+	
+	/*
+	 * 
+	 */
+	private Double directExecuteMethod(WsRequest request, WsMethod method) throws HostFailureException, TaskCancelledException, TransferFailureException, TimeoutException {
+
+		Double startTime = Msg.getClock();
 		method.execute();
+		method.getComputeDuration();
+		Double endTime = Msg.getClock();
+		Msg.info("Time Response of "+request +" = "+(endTime-startTime));
+		
 		//currentMethod.setWasExecuted(true);
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
 			Msg.info("Task completed");
+		
+		if(request.getMessageInteraction()==MessageInteractionType.Request)//don't need response
+			return null;
+		
 		String responseMailbox = request.senderMailbox;
 		double outputFileSize = method.getOutputFileSizeInBytes();
 		sendResponseTask(request, responseMailbox, outputFileSize);//currently send directly to a Service Invoker
 		this.outstandingExecutionMethods.remove(request.getId());
+		
+		return endTime-startTime;
 		//but should be to send to a Service, and from there to send to a ServiceInvoker
 	}
 
@@ -198,8 +309,10 @@ public class WorkerThread extends Process {
 		
 		ServiceOperation so = ChoreographyModel.findServiceOperation(currentMethod.getServiceName(), currentMethod.getName());
 		
+		//Event #1: receiving request, QoS Measurement Communication time 1, latency, bw of request; but for now not
+		
 		//if(currentMethod.hasDependency()){
-		if(so.getDependencies() !=null && !so.getDependencies().isEmpty()){
+		if(so.getDependencies() !=null && !so.getDependencies().isEmpty()){//have event #2 and event #3 
 			GatewayType gateway= so.getGatewayTypeToDependencies();//currentMethod.getGateway();
 			if(so.isSequential()){
 				Msg.info("WorkerThread: SEQUENCE " );
@@ -237,7 +350,17 @@ public class WorkerThread extends Process {
 		}
 		else{//there is no dependencies
 			System.out.println("Request without dependencies, so execute it ");
-			directExecuteMethod(request, currentMethod);
+			//Service without dependencies have no event #2 nor #3, only #1 and #4; and it's event #4 (sending response)		
+			// >>> QoS measurements // Event #4 (executing and sending response to original consumer)
+			ManagerRequest managerRequest = ChoreographyMonitor.findChoreographyInstance(request.getCompositionId()).getManagerRequest();
+			
+			QoSInfo qosInfo = managerRequest.getQoSInfoOf(request);
+			Double currentExecutionTime	= directExecuteMethod(request, currentMethod);//executing
+			QoSParameter qosCurrentExecutionTime = new QoSParameter(QoSAttribute.EXECUTION_TIME);
+			qosCurrentExecutionTime.setValue(currentExecutionTime);
+			qosInfo.setQoSParamInRequestOf(QoSAttribute.EXECUTION_TIME, qosCurrentExecutionTime);//current execution time
+			//managerRequest.notifyTaskConclusion(request);//notifying
+			Msg.info("Event 4: Current Execution time: <"+currentExecutionTime+">");
 		}
 	}//end 
 
@@ -245,8 +368,7 @@ public class WorkerThread extends Process {
 	
 	private void handleSequenceFlow(ServiceOperation so, WsMethod currentMethod, WsRequest currentRequest) throws TransferFailureException, HostFailureException, TimeoutException, TaskCancelledException {
 
-		System.out.println("Dependencies: "+currentMethod.getDependencies().size());
-		//System.out.println("Dependencies SO: "+so.getDependencies().size());
+		System.out.println("Dependencies SO: "+so.getDependencies().size());
 		//System.out.println("current Method: "+currentMethod.getName()+" of service "+currentMethod.getServiceName());
 		WsMethod dependentMethod = currentMethod.getDependencies().values().iterator().next();
 
@@ -261,7 +383,6 @@ public class WorkerThread extends Process {
 		System.out.println("ManagerRequest: current list: "+chorInstance.getManagerRequest().getRequests() );
 
 		
-		
 		String serviceOperationKey= dependentMethod.getServiceName()+"_"+dependentMethod.getName();
 		
 		
@@ -271,7 +392,8 @@ public class WorkerThread extends Process {
 			Msg.info("["+this.myMailbox+"]"+" Waiting a response of dependent service for "+currentRequest+", new request: "+requestDependentTask.toString());
 
 			//adding dependency
-			chorInstance.getManagerRequest().addDependency(currentRequest, requestDependentTask);//in order to waiting a response			
+			chorInstance.getManagerRequest().addDependency(currentRequest, requestDependentTask);//in order to waiting a response
+			//at add dependency the a dependency QoSInfo is creted by managerRequest 
 			this.outstandingExecutionMethods.put(currentRequest.getId(), currentMethod);
 			redirectTask(requestDependentTask);//redirecting Task to Service
 		}
@@ -286,30 +408,43 @@ public class WorkerThread extends Process {
 
 	
 	private void handleParallelGateway(ServiceOperation so, WsMethod currentMethod, WsRequest currentRequest) throws HostFailureException, TaskCancelledException, TransferFailureException, TimeoutException {
-		// TODO Auto-generated method stub
+		
+		ChoreographyInstance chorInstance= ChoreographyMonitor.findChoreographyInstance(currentRequest.getCompositionId());
+	
 		for (WsMethod dependentMethod : currentMethod.getDependencies().values()){
-			WsRequest requestDependentTask = new WsRequest(dependentMethod.getServiceName(),
-					dependentMethod.getName(), dependentMethod.getInputFileSizeInBytes(),this.myMailbox);
-			requestDependentTask.setCompositionId(currentRequest.getCompositionId());
-			//String serviceOperationKey= dependentMethod.getServiceName()+"_"+dependentMethod.getName();
-			//if( currentMethod.getMIType(serviceOperationKey)==MessageInteractionType.Request_Response ){
-			if(so.getMiTypeDependencies().get(dependentMethod.getName())==MessageInteractionType.Request_Response){
 
-				Msg.info("Waiting a response of dependent service: "+dependentMethod.getServiceName());
-				//String outstandingRequestKey=  currentRequest.instanceId+"_cu" ;
-				//this.outstandingExecutionRequests.put(currentRequest.getId(),currentRequest);
-				//addOutstandingResponse(currentRequest, requestDependentTask);
+				WsRequest requestDependentTask = new WsRequest(dependentMethod.getServiceName(),
+						dependentMethod.getName(), dependentMethod.getInputFileSizeInBytes(),this.myMailbox);
 				
-			}
-			else{
-				//Only Request with no response: Nothing to do
-				//What to do when the interaction is asyn?????
-			}
-			
-			redirectTask(requestDependentTask);//redirecting Task to Service
-			
+				requestDependentTask.setCompositionId(currentRequest.getCompositionId());
+				requestDependentTask.startTime= Msg.getClock();//initial time for communication time, and response time
 				
+				//System.out.println("ManagerRequest: current list: "+chorInstance.getManagerRequest().getRequests() );
+				String serviceOperationKey= dependentMethod.getServiceName()+"_"+dependentMethod.getName();
+				
+				//if( so.getMiTypeDependencies().get(dependentMethod.getName())==MessageInteractionType.Request_Response){
+				if( so.getMiTypeDependencies().get(serviceOperationKey)==MessageInteractionType.Request_Response){
+	
+					Msg.info("["+this.myMailbox+"]"+" Waiting a response of dependent service for "+currentRequest+", new request: "+requestDependentTask.toString());
+	
+					//adding dependency
+					chorInstance.getManagerRequest().addDependency(currentRequest, requestDependentTask);//in order to waiting a response			
+					if(this.outstandingExecutionMethods.get(currentRequest.getId()) ==null)
+						this.outstandingExecutionMethods.put(currentRequest.getId(), currentMethod);
+					
+					redirectTask(requestDependentTask);//redirecting Task to Service
+				}
+				else{
+					Msg.info("No Waiting, only was needed send and there is no response (async) ");
+					redirectTask(requestDependentTask);//redirecting Task to Service
+				}
+		
 		}//for
+		
+		if(this.outstandingExecutionMethods.get(currentRequest.getId()) ==null){
+			//Only Requests with no response: then to execute currentRequest
+			directExecuteMethod(currentRequest, currentMethod);
+		}
 
 	}
 
@@ -331,7 +466,9 @@ public class WorkerThread extends Process {
 		response.send(responseMailbox);
 	}
 
-	//public WsMethod requestWsMethodTask(String wsMethodName) {
+	/*
+	 * 
+	 */
 	public WsMethod requestWsMethodTask(String wsMethodName) {
 		if (ControlVariables.DEBUG)
 			Msg.info("WorkerThread: requestWsMethodTask, retrieving the method: "+wsMethodName + " of "+this.methods.size()+" methods");
@@ -352,19 +489,26 @@ public class WorkerThread extends Process {
 		return cloneMethod;
 	}
 
+	/*
+	 * 
+	 */
 	private void redirectTask(Task task)
 			throws TransferFailureException, HostFailureException,
 			TimeoutException {
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_TASK_TRANSMISSION)
 			Msg.info("WorkerThread: Redirecting to service" + myServiceMailbox);
 		//System.out.println("Trying to send to "+myServiceMailbox);
+		//QoS measurements Event #2 : throughput, but not for now 
 		task.send(myServiceMailbox);
-
 	}
+	
+	/*
+	 * 
+	 */
 	private WsMethod createMethod(String serviceName, String name, String computeSize,
 			String outputFileSize) {
 		WsMethod method = new WsMethod(serviceName,name, Double.parseDouble(computeSize),
-				0, Double.parseDouble(outputFileSize));
+				0, Double.parseDouble(outputFileSize));//inputSize = 0
 		
 		//String serviceOperationKey= method.getServiceName()+"_"+method.getName();
 		Msg.info("WorkerThread: createMethod : "+name);

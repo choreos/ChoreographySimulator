@@ -9,19 +9,19 @@
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
-		<argument value="3000" />  <!-- Method computing amount -->
-		<argument value="200000" />  <!-- Output File Size -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="100663296" />  <!-- Default response Size 7MB-->
 
 		<argument value="dependency"/><!-- method exec time-->
 			<argument value="WS3"/><!-- service name-->		
 			<argument value="method2"/><!-- operation name-->		
-			<argument value="3000" />  <!-- Method computing amount -->
-			<argument value="200000000" />  <!-- Output File Size (only resquest_response)-->
+			<argument value="7000000" />  <!-- Method computing amount -->
+			<argument value="5734400" />  <!-- Request Size 700KB-->
 	
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
-		<argument value="2000" />  <!-- Method computing amount -->
-		<argument value="200000" />  <!-- Output File Size -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="200000" />  <!-- Default response size -->
 	</process>
 
 	
@@ -33,18 +33,18 @@
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
-		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="200000" />  <!-- Output File Size -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="3800" />  <!-- Default Response size -->
 
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
-		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="200000" />  <!-- Output File Size -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="8388608" />  <!-- Default Response Size -->
 		<argument value="dependency"/><!-- method exec time-->
 			<argument value="WS5"/><!-- service name-->		
 			<argument value="method2"/><!-- operation name-->		
-			<argument value="3000" />  <!-- Method input size -->
-			<argument value="200000000" />  <!-- Output File Size (only resquest_response)-->
+			<argument value="3000000" />  <!-- Method computing amount -->
+			<argument value="5734400" />  <!-- Request size 7KB-->
 
 	</process>
 
@@ -55,13 +55,13 @@
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
-		<argument value="3000" />  <!-- Method compute duration (flops) -->
-		<argument value="20000" />  <!-- Output File Size -->
+		<argument value="7000000" />  <!-- Method compute duration (flops) -->
+		<argument value="20000" />  <!-- Default response size -->
 
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
-		<argument value="3000" />  <!-- Method computing size -->
-		<argument value="200000000" />  <!-- Output File Size -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="209715200" />  <!-- Response Size 25MB-->
 		
 	</process>
 
@@ -73,7 +73,7 @@
 
 		<argument value="WS1" />   <!-- name of service to invoke-->
 		<argument value="method1"/><!-- name of method of service -->
-		<argument value="100"/><!-- message input size -->
+		<argument value="2048000"/><!-- request  size  250KB-->
 		<argument value="10" />    <!-- Size of each returned value -->
 	</process>
 

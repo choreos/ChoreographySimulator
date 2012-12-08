@@ -17,18 +17,14 @@ import org.simgrid.msg.Task;
 
 import commTime.FinalizeTask;
 
-import br.usp.ime.simulation.choreography.model.ChoreographyModel;
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
-import br.usp.ime.simulation.datatypes.task.WsMethod;
 import br.usp.ime.simulation.datatypes.task.WsRequest;
 import br.usp.ime.simulation.experiments.control.ControlVariables;
 import br.usp.ime.simulation.experiments.control.Statistics;
 import br.usp.ime.simulation.log.Log;
 import br.usp.ime.simulation.monitoring.ChoreographyMonitor;
-import br.usp.ime.simulation.orchestration.Orchestration;
 import br.usp.ime.simulation.shared.ServiceInvoker;
 import br.usp.ime.simulation.shared.ServiceRegistry;
-import br.usp.ime.simulation.shared.WsRequestSender;
 
 public class Choreographer extends ServiceInvoker {
 	
@@ -43,6 +39,7 @@ public class Choreographer extends ServiceInvoker {
 	private Log log = new Log();
 	
 	private List ListStartTimes = new ArrayList();
+	private Double responseSize=0.001;
 	
 		
 	//public Choreographer(String[] mainArgs, Host host) {
@@ -59,8 +56,10 @@ public class Choreographer extends ServiceInvoker {
 
 		int numberOfInstances=1;
 		this.nro_requests = ChoreographyMonitor.getNumberRequests();
+		this.responseSize= ChoreographyMonitor.getResponseSizeOf("WS1_method1"); 
+				
 		this.log.open("sim_chor_"+this.nro_requests+".log");
-		Statistics.openDataset();
+		Statistics.openDataset(ChoreographyMonitor.getDatasetFileName());//before it was "sim_chor_data.txt" 
 		
 		ControlVariables.DEBUG =true; ControlVariables.PRINT_ALERTS=true;
 		
@@ -128,7 +127,13 @@ public class Choreographer extends ServiceInvoker {
 			pendingRequests--;
 		}
 		
-		Statistics.recordDescriptiveStatistics(this.nro_requests);
+		//Statistics.recordDescriptiveStatistics(this.nro_requests);
+		String meanResponseTime= String.valueOf( Statistics.statsResponseTime.getMean()) ;
+		String maxResponseTime= String.valueOf( Statistics.statsResponseTime.getMax()) ;
+		String minResponseTime= String.valueOf( Statistics.statsResponseTime.getMin()) ;
+		Double numberOfMB = this.responseSize/1048576.0; //1048576 Bytes = 1MB
+		//String varianceResponseTime= String.valueOf( Statistics.statsResponseTime.getVariance()) ;
+		Statistics.recordDescriptiveStatistics( numberOfMB.toString(), String.valueOf(this.responseSize) , meanResponseTime, maxResponseTime, minResponseTime);
 		
 		finalizeAll();
 

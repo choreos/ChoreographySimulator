@@ -75,18 +75,19 @@ public class WorkerThread extends Process {
 			if( !args[i].equals("method") ){
 				Msg.info("WorkerThread: Error parsing at method creating, not found method value tag, i="+i);
 				break;
-			}	
-			WsMethod currentMethod= createMethod(this.wsName, args[i+1], args[i + 2], args[i + 3]);
-			this.methods.put(currentMethod.getName(), currentMethod);
+			}
+			//The Response size is default, for customized response size, will be defined into dependency specification (TODO)
+			WsMethod currentMethod= createMethod(this.wsName, args[i+1], args[i + 2], "0", args[i + 3]);//request Size is only defined in dependency
+			this.methods.put(currentMethod.getServiceName()+"_"+currentMethod.getName(), currentMethod);
 			i=i+4;
 			//System.out.println("Arg["+i+"]= "+args[i]);
 			
 			if(args[i].equals("dependency")){//only a single dependency
 				System.out.println("Have dependency");
-				WsMethod dependentMethod= createMethod(args[i+1], args[i + 2], args[i + 3], args[i + 4]);
+				WsMethod dependentMethod= createMethod(args[i+1], args[i + 2], args[i + 3], args[i + 4], "0");//TODO would be customed response size 
 				//currentMethod.addDependency(dependentMethod.getServiceName(), dependentMethod);
-				currentMethod.addDependency(dependentMethod.getName(), dependentMethod);
-				System.out.println("dependencie: "+ dependentMethod.getName()+" of service "+ dependentMethod.getServiceName());
+				currentMethod.addDependency(dependentMethod.getServiceName()+"_"+dependentMethod.getName(), dependentMethod);
+				System.out.println("dependency: "+ dependentMethod.getName()+" of service "+ dependentMethod.getServiceName());
 				//currentMethod.addDependency(dependentMethod.getServiceName(), dependentMethod);
 				i=i+5;
 				System.out.println("Arg["+i+"]= "+args[i]);
@@ -287,8 +288,13 @@ public class WorkerThread extends Process {
 			return null;
 		
 		String responseMailbox = request.senderMailbox;
-		double outputFileSize = method.getOutputFileSizeInBytes();
-		sendResponseTask(request, responseMailbox, outputFileSize);//currently send directly to a Service Invoker
+		Double outputFileSize=0.001;
+		if(method.getServiceName().equals("WS1") && method.getName().equals("method1"))
+			outputFileSize = ChoreographyMonitor.getResponseSizeOf("WS1_method1");
+		else
+			outputFileSize = method.getOutputFileSizeInBytes();
+		
+		sendResponseTask(request, responseMailbox, outputFileSize);//currently send directly to a Service Invoker, and a response size is default
 		this.outstandingExecutionMethods.remove(request.getId());
 		
 		return endTime-startTime;
@@ -305,7 +311,8 @@ public class WorkerThread extends Process {
 		System.out.println("chorInstance ID : " +chorInstance.getCompositionId()+", request: "+
 					request.id+":"+request.serviceName+"-"+request.getName()+ " ,  at "+this.myMailbox);
 		chorInstance.getManagerRequest().addRequest(request); //new request to execute
-		WsMethod currentMethod = requestWsMethodTask(request.serviceMethod);
+		//WsMethod currentMethod = requestWsMethodTask(request.serviceMethod);
+		WsMethod currentMethod = requestWsMethodTask(request.serviceName+"_"+request.serviceMethod);
 		
 		ServiceOperation so = ChoreographyModel.findServiceOperation(currentMethod.getServiceName(), currentMethod.getName());
 		
@@ -469,21 +476,21 @@ public class WorkerThread extends Process {
 	/*
 	 * 
 	 */
-	public WsMethod requestWsMethodTask(String wsMethodName) {
+	public WsMethod requestWsMethodTask(String keyMethod) {
 		if (ControlVariables.DEBUG)
-			Msg.info("WorkerThread: requestWsMethodTask, retrieving the method: "+wsMethodName + " of "+this.methods.size()+" methods");
+			Msg.info("WorkerThread: requestWsMethodTask, retrieving the method: "+keyMethod + " of "+this.methods.size()+" methods");
 		//WsMethod method = methods.get(wsMethodName);//critic point
-		WsMethod method = methods.get(wsMethodName);//critic point
+		WsMethod method = methods.get(keyMethod);//critic point
 		if(method== null && ControlVariables.DEBUG)
 			Msg.info("WorkerThread: requestWsMethodTask - method null!");
 		
 		WsMethod cloneMethod = new WsMethod(method.getServiceName(),method.getName(),
-				method.getComputeDuration(), 0,
+				method.getComputeDuration(), method.getInputFileSizeInBytes(),
 				method.getOutputFileSizeInBytes());
 		//cloning dependencies
 		for(WsMethod dependency: method.getDependencies().values()){
 			WsMethod cloneMethodDependency=new WsMethod(dependency.getServiceName(), dependency.getName(),
-					dependency.getComputeDuration(), 0, dependency.getOutputFileSizeInBytes());
+					dependency.getComputeDuration(), dependency.getInputFileSizeInBytes(), dependency.getOutputFileSizeInBytes());
 			cloneMethod.addDependency(cloneMethodDependency.getName(), cloneMethodDependency);
 		}
 		return cloneMethod;
@@ -505,7 +512,7 @@ public class WorkerThread extends Process {
 	/*
 	 * 
 	 */
-	private WsMethod createMethod(String serviceName, String name, String computeSize,
+	private WsMethod createMethod(String serviceName, String name, String computeSize, 
 			String outputFileSize) {
 		WsMethod method = new WsMethod(serviceName,name, Double.parseDouble(computeSize),
 				0, Double.parseDouble(outputFileSize));//inputSize = 0
@@ -514,6 +521,18 @@ public class WorkerThread extends Process {
 		Msg.info("WorkerThread: createMethod : "+name);
 		return method;
 	}
-	
+
+	/*
+	 * 
+	 */
+	private WsMethod createMethod(String serviceName, String name, String computeSize,
+			String inputFileSize, String outputFileSize) {
+		WsMethod method = new WsMethod(serviceName,name, Double.parseDouble(computeSize),
+				Double.parseDouble(inputFileSize), Double.parseDouble(outputFileSize));//inputSize = 0
+		
+		//String serviceOperationKey= method.getServiceName()+"_"+method.getName();
+		Msg.info("WorkerThread: createMethod : "+name);
+		return method;
+	}
 	
 }

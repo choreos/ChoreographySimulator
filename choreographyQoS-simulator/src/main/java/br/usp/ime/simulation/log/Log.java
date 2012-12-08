@@ -59,7 +59,8 @@ public class Log {
         String line = "";
 
         for (String column : extraCols) {
-            line = line + " " + column;
+            line = line + "  " + column;
+        	//line = column + " "+line;
         }
 
         writeln(line);

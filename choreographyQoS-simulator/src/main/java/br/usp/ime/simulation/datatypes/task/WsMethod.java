@@ -10,8 +10,8 @@ import br.usp.ime.simulation.choreography.model.ChoreographyModel.MessageInterac
 public class WsMethod extends Task {
 
 	//private int computingSizeInMI;
-	private double inputFileSizeInBytes;
-	private double outputFileSizeInBytes;
+	private double inputFileSizeInBytes=0.001;
+	private double outputFileSizeInBytes=0.001;
 	private String wsMethodName;
 	private String serviceName;
 	private Map<String, WsMethod> dependencies;//key : servicename_methodName
@@ -34,6 +34,9 @@ public class WsMethod extends Task {
 		return (this.dependencies != null && !dependencies.isEmpty());
 	}
 	
+	/*
+	 * key=serviceName_serviceMethodName
+	 */
 	public void addDependency(String methodName, WsMethod Method){
 		this.dependencies.put(methodName, Method);
 	}

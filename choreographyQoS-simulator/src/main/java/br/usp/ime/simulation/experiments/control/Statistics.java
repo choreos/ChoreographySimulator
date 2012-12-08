@@ -12,20 +12,32 @@ public class Statistics {
 	public static DescriptiveStatistics statsResponseTime = new DescriptiveStatistics();
 	
 	
+	public static void openDataset(String fileName){
+		datasetFile =fileName ;
+		dataSet.open(datasetFile, true);
+	}
+	
 	public static void openDataset(){
 		dataSet.open(datasetFile, true);
 	}
 
 
 	public static void recordDescriptiveStatistics(Integer nro_requests) {
-		// TODO Auto-generated method stub
 		//writing into dataSet 
 		Double variance = statsResponseTime.getVariance();
 		dataSet.record(nro_requests.toString(), String.valueOf(statsResponseTime.getMean()), 
 				String.valueOf(statsResponseTime.getMax()), String.valueOf(statsResponseTime.getMin()), variance.toString() );
-		
 	}
 
+
+	public static void recordDescriptiveStatistics( String line ) {
+		//writing into dataSet 
+		dataSet.record(line );
+	}
+
+	public static void recordDescriptiveStatistics( String... extraCols ) {
+		dataSet.record(extraCols);
+	}
 
 	public static void closeDataset() {
 		dataSet.close();

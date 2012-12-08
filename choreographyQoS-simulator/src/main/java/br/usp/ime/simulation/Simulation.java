@@ -25,14 +25,18 @@ public class Simulation {
     String deploymentFile = "smallChoreographyDeployment2.xml";
     String specificationFile = "smallChoreographySpacification.xml";
     int nro_request=1;
+    Double responseSize=0.0;
+    String dataSetFileName="_";
 	/* initialize the MSG simulation. Must be done before anything else (even logging). */
 	Msg.init(args);
 
-    if(args.length == 4) {
+    if(args.length == 6) {
     	platform = args[0];
     	deploymentFile = args[1];
     	specificationFile = args[2];
     	nro_request=Integer.parseInt(args[3]);
+    	responseSize=Double.parseDouble(args[4]);
+    	dataSetFileName=args[5].trim();
     }
     else{
     	Msg.info("Usage   : Simulation platform_file deployment_file");
@@ -43,6 +47,8 @@ public class Simulation {
   	//ChoreographyModel.generateChoreographyMode("smallChoreographySpecification.xml");
   	ChoreographyModel.generateChoreographyMode(specificationFile);
   	ChoreographyMonitor.setNumberRequests(nro_request);
+  	ChoreographyMonitor.setResponseSizeOf("WS1_method1", responseSize) ;
+  	ChoreographyMonitor.setDatasetFileName(dataSetFileName);
   	
 	/* construct the platform and deploy the application */
 	Msg.createEnvironment(platform);

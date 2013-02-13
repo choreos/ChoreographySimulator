@@ -1,0 +1,144 @@
+<?xml version='1.0'?>
+<!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid.dtd">
+<platform version="3">
+	
+	<process host="Bellemarre" function="br.usp.ime.simulation.datatypes.process.Service">
+
+	    <argument value="70"/><!-- number of threads-->
+	    <argument value="WS1"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="100663296" />  <!-- Default response size 12MB-->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="OrchWS"/><!-- service name-->		
+			<argument value="method1"/><!-- operation name-->		
+			<argument value="7000000" />  <!-- Method computing size -->
+			<argument value="5734400" />  <!-- Request Size 700KB-->
+	
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
+		<argument value="3000" />  <!-- Method computing size -->
+		<argument value="2000" />  <!-- Output File Size -->
+	</process>
+
+	
+
+	<process host="Revoada" function="br.usp.ime.simulation.datatypes.process.Service">
+
+	    <argument value="70"/><!-- number of threads-->
+	    <argument value="OrchWS"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
+		<argument value="0.01" />  <!-- Method computing size -->
+		<argument value="8388608" />  <!-- Default response size -->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="WS3"/><!-- service name-->		
+			<argument value="method2"/><!-- operation name-->		
+			<argument value="7000000" />  <!-- Method computing size -->
+			<argument value="5734400" />  <!-- Request Size 700KB-->
+
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
+		<argument value="0.01" />  <!-- Method computing size -->
+		<argument value="2000" />  <!-- Output File Size -->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="WS5"/><!-- service name-->		
+			<argument value="method2"/><!-- operation name-->		
+			<argument value="3000000" />  <!-- Method input size -->
+			<argument value="5734400" />  <!-- Output File Size (only resquest_response)-->
+
+	    <argument value="method"/><!--method-->
+		<argument value="method3"/><!-- method name -->
+		<argument value="0.01" />  <!-- Method computing amount -->
+		<argument value="58720256" />  <!-- Default response size 7MB-->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="WS2"/><!-- service name-->		
+			<argument value="method3"/><!-- operation name-->		
+			<argument value="7000000" />  <!-- Method input size -->
+			<argument value="2048000" />  <!-- Request Size 250KB -->
+	</process>
+
+	<process host="Vincent" function="br.usp.ime.simulation.datatypes.process.Service">
+
+	    <argument value="70"/><!-- number of threads-->
+	    <argument value="WS3"/><!--service name-->
+
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="2048000" />  <!-- Default Response size 250 KB -->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="8388608" />  <!-- Default Response Size 1MB-->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="OrchWS"/><!-- service name-->		
+			<argument value="method2"/><!-- operation name-->		
+			<argument value="0" />  <!-- Method computing amount -->
+			<argument value="5734400" />  <!-- Request Size 700KB-->
+
+
+	</process>
+
+	<process host="Dali" function="br.usp.ime.simulation.datatypes.process.Service">
+
+	    <argument value="70"/><!-- number of threads-->
+	    <argument value="WS5"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="200000" />  <!-- Default response size -->
+
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="58720256" />  <!-- Default response size 7MB-->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="OrchWS"/><!-- service name-->		
+			<argument value="method3"/><!-- operation name-->		
+			<argument value="0.01" />  <!-- Method computing amount -->
+			<argument value="2048000" />  <!-- Request Size 250KB -->
+
+	</process>
+
+	<process host="iRMX" function="br.usp.ime.simulation.datatypes.process.Service">
+
+	    <argument value="70"/><!-- number of threads-->
+	    <argument value="WS2"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="2000" />  <!-- Default response size -->
+
+	
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="2000" />  <!-- Default response size -->
+
+	    <argument value="method"/><!--method-->
+		<argument value="method3"/>    <!-- method name -->
+		<argument value="7000000" />   <!-- Method computing size -->
+		<argument value="58720256" />  <!-- Default response size 7MB-->
+
+	</process>
+
+	<process host="Jacquelin"
+		function="br.usp.ime.simulation.choreography.Choreographer">
+		
+		<!-- <argument value="1000" />   Amount of choreography requests (instances) -->
+		<argument value="0" />   <!-- Requests per second -->
+
+		<argument value="WS1" />   <!-- name of service to invoke-->
+		<argument value="method1"/><!-- name of method of service -->
+		<argument value="2048000"/><!-- request  size 250KB-->
+		<argument value="10" />    <!-- Size of each returned value -->
+	</process>
+
+</platform>

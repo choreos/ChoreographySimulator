@@ -6,47 +6,43 @@
 
 	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS1"/><!--service name-->
-	    <argument value="10000"/><!-- degradation mean (1/rate) (milliseconds) -->
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
-		<argument value="7000000" />  <!-- Method computing amount -->
-		<argument value="100663296" />  <!-- Default response Size 12MB-->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="100663296" />  <!-- Default response size 12MB-->
 
 		<argument value="dependency"/><!-- method exec time-->
 			<argument value="WS3"/><!-- service name-->		
 			<argument value="method2"/><!-- operation name-->		
-			<argument value="7000000" />  <!-- Method computing amount -->
+			<argument value="7000000" />  <!-- Method computing size -->
 			<argument value="5734400" />  <!-- Request Size 700KB-->
 	
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
-		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="7000000" />  <!-- Method computing size -->
 		<argument value="200000" />  <!-- Default response size -->
 	</process>
-
-	
 
 	<process host="Revoada" function="br.usp.ime.simulation.datatypes.process.Service">
 
 	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS3"/><!--service name-->
-	    <argument value="10000"/><!-- degradation mean (1/rate) (milliseconds) -->
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
-		<argument value="7000000" />  <!-- Method computing size -->
-		<argument value="3800" />  <!-- Default Response size -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="2048000" />  <!-- Default Response size 250 KB -->
 
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
-		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="7000000" />  <!-- Method computing amount -->
 		<argument value="8388608" />  <!-- Default Response Size 1MB-->
 		<argument value="dependency"/><!-- method exec time-->
 			<argument value="WS5"/><!-- service name-->		
 			<argument value="method2"/><!-- operation name-->		
 			<argument value="3000000" />  <!-- Method computing amount -->
-			<argument value="5734400" />  <!-- Request size 700KB-->
+			<argument value="5734400" />  <!-- Request Size 700KB-->
 
 	</process>
 
@@ -54,19 +50,47 @@
 
 	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS5"/><!--service name-->
-	    <argument value="10000"/><!-- degradation mean (1/rate) (milliseconds) -->
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
-		<argument value="7000000" />  <!-- Method compute duration (flops) -->
-		<argument value="20000" />  <!-- Default response size -->
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="200000" />  <!-- Default response size -->
 
 	    <argument value="method"/><!--method-->
 		<argument value="method2"/><!-- method name -->
-		<argument value="7000000" />  <!-- Method computing size -->
-		<argument value="209715200" />  <!-- Response Size 25MB-->
-		
+		<argument value="7000000" />  <!-- Method computing amount -->
+		<argument value="58720256" />  <!-- Default response size 7MB-->
+		<argument value="dependency"/><!-- method exec time-->
+			<argument value="WS2"/><!-- service name-->		
+			<argument value="method3"/><!-- operation name-->		
+			<argument value="7000000" />  <!-- Method computing amount -->
+			<argument value="2048000" />  <!-- Request Size 250KB -->
+
 	</process>
+
+	<process host="iRMX" function="br.usp.ime.simulation.datatypes.process.Service">
+
+	    <argument value="50"/><!-- number of threads-->
+	    <argument value="WS2"/><!--service name-->
+	    
+	    <argument value="method"/><!--method-->
+		<argument value="method1"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="2000" />  <!-- Default response size -->
+
+	
+	    <argument value="method"/><!--method-->
+		<argument value="method2"/><!-- method name -->
+		<argument value="7000000" />  <!-- Method computing size -->
+		<argument value="2000" />  <!-- Default response size -->
+
+	    <argument value="method"/><!--method-->
+		<argument value="method3"/>    <!-- method name -->
+		<argument value="7000000" />   <!-- Method computing size -->
+		<argument value="58720256" />  <!-- Default response size 7MB-->
+
+	</process>
+
 
 	<process host="Jacquelin"
 		function="br.usp.ime.simulation.choreography.Choreographer">
@@ -76,7 +100,7 @@
 
 		<argument value="WS1" />   <!-- name of service to invoke-->
 		<argument value="method1"/><!-- name of method of service -->
-		<argument value="2048000"/><!-- Request  size  250KB-->
+		<argument value="2048000"/><!-- request  size 250KB-->
 		<argument value="10" />    <!-- Size of each returned value -->
 	</process>
 

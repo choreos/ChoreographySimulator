@@ -1,0 +1,56 @@
+<?xml version='1.0'?>
+ <choreography name="CDN application">
+	<services>
+		<service name="WS1" >	
+			<serviceOperation name="method1" />
+			<serviceOperation name="method2" />
+		</service>
+		<service name="WS2" >	
+			<serviceOperation name="method1" />
+			<serviceOperation name="method2" />
+			<serviceOperation name="method3" />
+		</service>
+		<service name="WS3" >	
+			<serviceOperation name="method1" />
+			<serviceOperation name="method2" />
+		</service>
+		<service name="WS4" >	
+			<serviceOperation name="method1" />
+			<serviceOperation name="method2" />
+			<serviceOperation name="method3" />
+		</service>
+		<service name="WS5" >	
+			<serviceOperation name="method1" />
+			<serviceOperation name="method2" />
+		</service>
+	</services>
+	<interactions>
+		<interaction name="interactionWS1-WS3" >
+			<source service="WS1"  operation="method1"   />
+			<target service="WS3" operation="method2"    type="REQUEST_RESPONSE" />
+		</interaction>
+		<!-- <interaction name="interactionWS1-WS3_WS4" >
+			<source service="WS3"  operation="method2"   />
+			<gateway type="parallel" />
+			<target  service="WS5" name="method1"  type="REQUEST_RESPONSE"  />
+			<target  service="WS4" name="method2"  type="REQUEST"  />
+			<gateway type="join" />
+		</interaction>  -->
+		<!-- <interaction name="interactionWS2-WS4" >
+			<source service="WS2"  operation="method1"   />
+			<target service="WS4" operation="method3"    type="REQUEST_RESPONSE" />
+		</interaction> -->
+		<interaction name="interactionWS5-WS2" >
+			<source service="WS5"  operation="method2"   />
+			<target service="WS2" operation="method3"    type="REQUEST_RESPONSE" />
+		</interaction>
+		<!-- <interaction name="interactionWS1-WS2" >
+			<source service="WS1"  operation="method1"  />
+			<target service="WS2" operation="method3"    type="REQUEST_RESPONSE" />
+		</interaction> -->
+		<interaction name="interactionWS3-WS5" >
+			<source service="WS3"  operation="method2"  />
+			<target service="WS5" operation="method2"    type="REQUEST_RESPONSE" />
+		</interaction>
+	</interactions>
+ </choreography>

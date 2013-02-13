@@ -58,8 +58,8 @@ public class Choreographer extends ServiceInvoker {
 		this.nro_requests = ChoreographyMonitor.getNumberRequests();
 		this.responseSize= ChoreographyMonitor.getResponseSizeOf("WS1_method1"); 
 				
-		this.log.open("sim_chor_"+this.nro_requests+".log");
-		Statistics.openDataset(ChoreographyMonitor.getDatasetFileName());//before it was "sim_chor_data.txt" 
+		this.log.open("sim_chor_requests_"+this.nro_requests+".log");
+		Statistics.openDataset(ChoreographyMonitor.getDatasetFileName());//default: "sim_chor_data.txt" 
 		
 		ControlVariables.DEBUG =true; ControlVariables.PRINT_ALERTS=true;
 		
@@ -114,7 +114,7 @@ public class Choreographer extends ServiceInvoker {
 			Double startTime = response.requestServed.startTime;
 			Double finishTime = Msg.getClock();
 			Statistics.statsResponseTime.addValue(finishTime-startTime);
-			log.record(startTime, finishTime,response.requestServed.toString());
+			//log.record(startTime, finishTime,response.requestServed.toString());
 			//log.record(start, finish,response.serviceMethod);
 			//System.out.println("TR: "+(finish-start));
 			//System.out.println("<"+ startTime+" , "+Msg.getClock()+">");
@@ -131,7 +131,8 @@ public class Choreographer extends ServiceInvoker {
 		String meanResponseTime= String.valueOf( Statistics.statsResponseTime.getMean()) ;
 		String maxResponseTime= String.valueOf( Statistics.statsResponseTime.getMax()) ;
 		String minResponseTime= String.valueOf( Statistics.statsResponseTime.getMin()) ;
-		Double numberOfMB = this.responseSize/1048576.0; //1048576 Bytes = 1MB
+		//Double numberOfMB = this.responseSize/1048576.0; //1048576 Bytes = 1MB
+		Double numberOfMB = this.responseSize/8388608.0; //8388608 bits = 1MB
 		//String varianceResponseTime= String.valueOf( Statistics.statsResponseTime.getVariance()) ;
 		Statistics.recordDescriptiveStatistics( numberOfMB.toString(), String.valueOf(this.responseSize) , meanResponseTime, maxResponseTime, minResponseTime);
 		
@@ -150,8 +151,8 @@ public class Choreographer extends ServiceInvoker {
 			WsRequest requestTask = new WsRequest(this.entryServiceName, this.entryServiceNameMethod 
 													,this.inputMessageSize ,this.myMailbox);
 			requestTask.setCompositionId(chorInstance.getCompositionId());
-			requestTask.startTime= Msg.getClock();
-			this.ListStartTimes.add(requestTask.startTime);
+			//requestTask.startTime= Msg.getClock();
+			//this.ListStartTimes.add(requestTask.startTime);
 			//this.ListStartTimes.add(System.currentTimeMillis());
 			//System.out.println("StartTime:"+requestTask.startTime);
 			invokeWsMethod(requestTask, myMailbox, entryMailbox);

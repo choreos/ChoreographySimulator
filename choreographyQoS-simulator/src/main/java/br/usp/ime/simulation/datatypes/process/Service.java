@@ -49,6 +49,7 @@ public class Service extends ServiceInvoker {
 
 		int workersNumber = Integer.parseInt(args[0]);
 		this.wsName = args[1];
+		//meanResponseTimeDegradation = args[2];
 		
 		mainArgs=Arrays.copyOf(args, args.length+2);
 

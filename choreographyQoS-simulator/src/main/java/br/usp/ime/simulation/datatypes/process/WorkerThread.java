@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.simgrid.msg.Host;
 import org.simgrid.msg.HostFailureException;
 import org.simgrid.msg.Msg;
@@ -38,6 +39,9 @@ public class WorkerThread extends Process {
 	private String wsName;
 	private String myMailbox;
 	private String myServiceMailbox;
+	private Double meanResponseTimeDegradation; 
+	
+	private ExponentialDistribution exponentialDistribution;
 	
     //only of dependencies with request_response type
 	private Map<Integer, WsMethod>  outstandingExecutionMethods = new HashMap<Integer, WsMethod>();//< idWsRequest, wsmethod >
@@ -45,13 +49,19 @@ public class WorkerThread extends Process {
 	
 	public WorkerThread(String[] mainArgs, Host host) {
 		super(host, "WsRequestSender", mainArgs);
+		//this.exponentialDistribution = new ExponentialDistribution(10000);//with a mean of 10s
 	}
 
 	@Override
 	public void main(String[] args) throws MsgException {
-		wsName = args[1];
-		myMailbox = args[0];
-		methods = new HashMap<String, WsMethod>();
+		
+		this.myMailbox = args[0];
+		this.wsName = args[1];
+		
+		this.meanResponseTimeDegradation = Double.valueOf(args[2]);
+		this.exponentialDistribution = new ExponentialDistribution(this.meanResponseTimeDegradation);//with a mean of 10s
+		
+		this.methods = new HashMap<String, WsMethod>();
 		
 		this.myServiceMailbox= args[args.length-1];
 		// host = getHost();
@@ -70,7 +80,9 @@ public class WorkerThread extends Process {
 	 * 
 	 */
 	private void createWebMethods(String[] args) {
-		for (int i = 2; i < args.length; ) {
+		int initialIndex=3;//method position
+		
+		for (int i = initialIndex; i < args.length; ) {
 			System.out.println("Arg["+i+"]= "+args[i]);
 			if( !args[i].equals("method") ){
 				Msg.info("WorkerThread: Error parsing at method creating, not found method value tag, i="+i);
@@ -123,6 +135,8 @@ public class WorkerThread extends Process {
 				ResponseTask responseTask = ((ResponseTask) task);
 				//if responseTask.requestServed.done==false ?
 
+				//%%%%  adding a value according to a probability distribution?
+				
 				ChoreographyInstance chorInstance= ChoreographyMonitor.findChoreographyInstance(responseTask.requestServed.getCompositionId());
 				//Msg.info("WorkerThread: chorInstance: "+chorInstance.getCompositionId());
 				
@@ -276,9 +290,23 @@ public class WorkerThread extends Process {
 
 		Double startTime = Msg.getClock();
 		method.execute();
-		method.getComputeDuration();
+		//method.getComputeDuration();
+		//%%%%  adding a value according to a probability distribution?
+		Double additionalExecutionTime = this.exponentialDistribution.sample();
+		sleep(additionalExecutionTime.longValue());
+		/*try {
+			//wait(additionalExecutionTime.longValue());
+			
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			System.out.println(" ******* Exception wait a additional execuion Time!");
+			e.printStackTrace();
+		}*/
+		
+		
 		Double endTime = Msg.getClock();
-		Msg.info("Time Response of "+request +" = "+(endTime-startTime));
+		Msg.info("Execution Time of "+request +" = "+(endTime-startTime));
+		//Msg.info("Execution Time of "+request +" = "+(endTime-startTime)+additionalEsecutionTime);
 		
 		//currentMethod.setWasExecuted(true);
 		if (ControlVariables.DEBUG || ControlVariables.PRINT_ALERTS)
@@ -289,15 +317,21 @@ public class WorkerThread extends Process {
 		
 		String responseMailbox = request.senderMailbox;
 		Double outputFileSize=0.001;
-		if(method.getServiceName().equals("WS1") && method.getName().equals("method1"))
-			outputFileSize = ChoreographyMonitor.getResponseSizeOf("WS1_method1");
+
+		if(method.getServiceName().equals("WS1") && method.getName().equals("method1")){
+			if(ChoreographyMonitor.getResponseSizeOf("WS1_method1")==null)
+				outputFileSize = method.getOutputFileSizeInBytes();
+			else
+				outputFileSize = ChoreographyMonitor.getResponseSizeOf("WS1_method1");
+		}
 		else
 			outputFileSize = method.getOutputFileSizeInBytes();
 		
 		sendResponseTask(request, responseMailbox, outputFileSize);//currently send directly to a Service Invoker, and a response size is default
 		this.outstandingExecutionMethods.remove(request.getId());
 		
-		return endTime-startTime;
+		return (endTime-startTime);
+		//return (endTime-startTime)+additionalEsecutionTime;
 		//but should be to send to a Service, and from there to send to a ServiceInvoker
 	}
 
@@ -533,6 +567,15 @@ public class WorkerThread extends Process {
 		//String serviceOperationKey= method.getServiceName()+"_"+method.getName();
 		Msg.info("WorkerThread: createMethod : "+name);
 		return method;
+	}
+
+	public Double getMeanResponseTimeDegradation() {
+		return meanResponseTimeDegradation;
+	}
+
+	public void setMeanResponseTimeDegradation(
+			Double meanResponseTimeDegradation) {
+		this.meanResponseTimeDegradation = meanResponseTimeDegradation;
 	}
 	
 }

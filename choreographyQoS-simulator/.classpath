@@ -5,8 +5,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="M2_REPO/org/mockito/mockito-all/1.9.0/mockito-all-1.9.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/jdom/jdom2/2.0.3/jdom2-2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/simgrid.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math3-3.0.jar"/>
-	<classpathentry kind="lib" path="lib/jdom-2.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/simgrid.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -1,0 +1,60 @@
+<?xml version='1.0'?>
+ <!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid.dtd">
+ <platform version="3">
+ <AS  id="AS0"  routing="Full">
+   <host id="Jacquelin" power="137333000"/>
+   <host id="iRMX" power="68667000"/>
+   <host id="Revoada" power="68667000"/>
+   <host id="Bellemarre" power="34333000"/>
+   <host id="Vincent" power="34333000"/>
+   <host id="Dali" power="34333000"/>
+
+   <link id="100Kbps" bandwidth="100000" latency="0.002"/>
+   <link id="1Mbps" bandwidth="1000000" latency="0.002"/>
+   <link id="3Mbps" bandwidth="3000000" latency="0.002"/>
+   <link id="5Mbps" bandwidth="5000000" latency="0.002"/>
+   <link id="10Mbps" bandwidth="10000000" latency="0.002"/>
+   <link id="20Mbps" bandwidth="20000000" latency="0.002"/>
+   <link id="40Mbps" bandwidth="40000000" latency="0.002"/>
+
+
+
+   <route src="Jacquelin" dst="iRMX" symmetrical="NO">
+       <link_ctn id="1Mbps"/>
+   </route>
+   <route src="Jacquelin" dst="Revoada" symmetrical="YES">
+       <link_ctn id="1Mbps"/>
+   </route>
+   <route src="Jacquelin" dst="Bellemarre" symmetrical="NO">
+       <link_ctn id="1Mbps"/>
+   </route>
+
+   <route src="Jacquelin" dst="Vincent" symmetrical="YES">
+       <link_ctn id="1Mbps"/>
+   </route>
+
+   <route src="Bellemarre" dst="Jacquelin" symmetrical="NO">
+      <link_ctn id="1Mbps"/>
+   </route>
+   <route src="Bellemarre" dst="iRMX" symmetrical="NO">
+      <link_ctn id="1Mbps"/>
+   </route>
+   <route src="Bellemarre" dst="Revoada" symmetrical="YES">
+      <link_ctn id="1Mbps"/>
+   </route>
+
+   <route src="Revoada" dst="Vincent" symmetrical="YES">
+       <link_ctn id="1Mbps"/>
+   </route>
+   <route src="iRMX" dst="Jacquelin" symmetrical="NO">
+      <link_ctn id="1Mbps"/>
+   </route>
+   <route src="iRMX" dst="Vincent" symmetrical="YES">
+      <link_ctn id="1Mbps"/>
+   </route>
+
+   <route src="iRMX" dst="Bellemarre" symmetrical="NO">
+      <link_ctn id="1Mbps"/>
+   </route>
+ </AS>
+ </platform>

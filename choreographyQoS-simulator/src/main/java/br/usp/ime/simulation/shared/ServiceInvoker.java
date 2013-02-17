@@ -26,7 +26,7 @@ public abstract class ServiceInvoker extends Process {
 	
 	protected void invokeWsMethod(WsRequest request, String sender,
 			String destination) throws MsgException {
-		System.out.println(">>>["+sender+"]Invoking other service for request: "+request+ "from "+request.senderMailbox );
+		//System.out.println(">>>["+sender+"]Invoking other service for request: "+request+ "from "+request.senderMailbox );
 		request.destination = destination;
 		request.senderMailbox = sender;
 

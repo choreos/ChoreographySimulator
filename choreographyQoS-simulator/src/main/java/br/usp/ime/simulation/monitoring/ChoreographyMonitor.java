@@ -13,8 +13,12 @@ public class ChoreographyMonitor {//extends Process{
 	
 	//for experiments
 	private static int numberRequests=1;
+	private static int numberEnacts=1;//number of simulations
 	private static Map<String, Double> responseSizes = new HashMap<String, Double>();
 	private static String datasetFileName="data_default.txt";
+	
+	//for Monitoring
+	private static int pivot=0;
 	
 	public  static void addChoreographyInstance(ChoreographyInstance instance){
 		choreographyInstances.put(instance.getCompositionId(), instance);
@@ -49,7 +53,8 @@ public class ChoreographyMonitor {//extends Process{
 	 * @param responseSize : in Bytes
 	 */
 	public static void setResponseSizeOf(String key, Double responseSize) {
-		responseSizes.put(key, responseSize);
+		if(responseSize!=null && responseSize>0)
+			responseSizes.put(key, responseSize);
 	}
 	
 	public static Double getResponseSizeOf(String key){
@@ -63,5 +68,25 @@ public class ChoreographyMonitor {//extends Process{
 	
 	public static void setDatasetFileName(String filename) {
 		datasetFileName = filename;
+	}
+
+	public static void setNumberOfEnacts(Integer nro_enacts) {
+		numberEnacts=nro_enacts;
+	}
+	
+	public static Integer getNumberOfEnacts() {
+		return numberEnacts;
+	}
+
+	public static int getCurrentPivot() {
+		return pivot;
+	}
+
+	public static int nextPivot() {
+		return ++pivot;
+	}
+
+	public static void setPivot(int pivot) {
+		ChoreographyMonitor.pivot = pivot;
 	}
 }

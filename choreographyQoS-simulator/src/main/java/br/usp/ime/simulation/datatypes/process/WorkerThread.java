@@ -41,7 +41,7 @@ public class WorkerThread extends Process {
 	private String myServiceMailbox;
 	private Double meanResponseTimeDegradation; 
 	
-	private ExponentialDistribution exponentialDistribution;
+	private ExponentialDistribution exponentialDistribution=null;
 	
     //only of dependencies with request_response type
 	private Map<Integer, WsMethod>  outstandingExecutionMethods = new HashMap<Integer, WsMethod>();//< idWsRequest, wsmethod >
@@ -59,7 +59,9 @@ public class WorkerThread extends Process {
 		this.wsName = args[1];
 		
 		this.meanResponseTimeDegradation = Double.valueOf(args[2]);
-		this.exponentialDistribution = new ExponentialDistribution(this.meanResponseTimeDegradation);//with a mean of 10s
+		
+		if(meanResponseTimeDegradation>0)
+			this.exponentialDistribution = new ExponentialDistribution(this.meanResponseTimeDegradation);//with a mean of ...
 		
 		this.methods = new HashMap<String, WsMethod>();
 		
@@ -126,7 +128,8 @@ public class WorkerThread extends Process {
 				
 				WsRequest wsRequest = (WsRequest) task;
 				Msg.info("["+this.myMailbox+"] Receiving the request  "+wsRequest+" , to execute " );
-				wsRequest.startTime = startTime;
+				
+				/* Execution*/
 				executeMethod(wsRequest);
 			}
 			else if(task instanceof ResponseTask){
@@ -292,16 +295,10 @@ public class WorkerThread extends Process {
 		method.execute();
 		//method.getComputeDuration();
 		//%%%%  adding a value according to a probability distribution?
-		Double additionalExecutionTime = this.exponentialDistribution.sample();
-		sleep(additionalExecutionTime.longValue());
-		/*try {
-			//wait(additionalExecutionTime.longValue());
-			
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			System.out.println(" ******* Exception wait a additional execuion Time!");
-			e.printStackTrace();
-		}*/
+		if(this.exponentialDistribution!=null){
+			Double additionalExecutionTime = this.exponentialDistribution.sample();
+			sleep(additionalExecutionTime.longValue());
+		}
 		
 		
 		Double endTime = Msg.getClock();
@@ -316,13 +313,17 @@ public class WorkerThread extends Process {
 			return null;
 		
 		String responseMailbox = request.senderMailbox;
-		Double outputFileSize=0.001;
+		Double outputFileSize;
 
 		if(method.getServiceName().equals("WS1") && method.getName().equals("method1")){
-			if(ChoreographyMonitor.getResponseSizeOf("WS1_method1")==null)
+			if(ChoreographyMonitor.getResponseSizeOf("WS1_method1")==null){
 				outputFileSize = method.getOutputFileSizeInBytes();
-			else
+				System.out.println("Normal, response Size: "+outputFileSize);
+			}
+			else{
 				outputFileSize = ChoreographyMonitor.getResponseSizeOf("WS1_method1");
+				System.out.println("trick, response Size: "+outputFileSize);
+			}
 		}
 		else
 			outputFileSize = method.getOutputFileSizeInBytes();
@@ -496,6 +497,7 @@ public class WorkerThread extends Process {
 	private void sendResponseTask(WsRequest request, String responseMailbox,
 			double outputFileSize) throws TransferFailureException,
 			HostFailureException, TimeoutException {
+		
 		ResponseTask response = new ResponseTask(outputFileSize);
 		response.serviceName = wsName;
 		response.instanceId = request.getId();
@@ -505,7 +507,7 @@ public class WorkerThread extends Process {
 			Msg.info("Sending response from " + request.destination);//TODO destination?
 		response.requestServed.done=true;//TODO verify?
 		response.send(responseMailbox);
-	}
+	} 
 
 	/*
 	 * 

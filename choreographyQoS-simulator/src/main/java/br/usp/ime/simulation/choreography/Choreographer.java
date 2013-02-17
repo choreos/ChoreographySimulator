@@ -15,6 +15,8 @@ import org.simgrid.msg.MsgException;
 import org.simgrid.msg.Process;
 import org.simgrid.msg.Task;
 
+import sun.awt.windows.ThemeReader;
+
 import commTime.FinalizeTask;
 
 import br.usp.ime.simulation.datatypes.task.ResponseTask;
@@ -39,7 +41,7 @@ public class Choreographer extends ServiceInvoker {
 	private Log log = new Log();
 	
 	private List ListStartTimes = new ArrayList();
-	private Double responseSize=0.001;
+	private Double responseSize=-1.0;
 	
 		
 	//public Choreographer(String[] mainArgs, Host host) {
@@ -56,7 +58,9 @@ public class Choreographer extends ServiceInvoker {
 
 		int numberOfInstances=1;
 		this.nro_requests = ChoreographyMonitor.getNumberRequests();
-		this.responseSize= ChoreographyMonitor.getResponseSizeOf("WS1_method1"); 
+		
+		if(ChoreographyMonitor.getResponseSizeOf("WS1_method1")!=null);
+			this.responseSize= ChoreographyMonitor.getResponseSizeOf("WS1_method1"); 
 				
 		this.log.open("sim_chor_requests_"+this.nro_requests+".log");
 		Statistics.openDataset(ChoreographyMonitor.getDatasetFileName());//default: "sim_chor_data.txt" 
@@ -85,22 +89,39 @@ public class Choreographer extends ServiceInvoker {
 		//if (ControlVariables.DEBUG || ControlVariables.PRINT_MAILBOXES)
 			Msg.info("Choreographer mailbox: '" + myMailbox + "'");
 			
-			this.enact();
+			//this.enact();
+			this.simulate();
 			
 	}
 
 	
 	
-	
+	/*
+	 * Simulations!
+	 */
+	private void simulate() throws MsgException {
+		int nro_enacts=ChoreographyMonitor.getNumberOfEnacts();
+		
+		for(int i=0;i<nro_enacts;i++)
+			enact();
+		
+		finalizeAll();
+	}
+
 	private String findServiceMailbox(String entryServiceName) throws InterruptedException {
 		//wait(1000);
 		String mailbox= ServiceRegistry.getInstance().findServiceMailBoxByServiceName(entryServiceName);
 		return mailbox;
 	}
 
+	/*
+	 * Enact a finite number of request
+	 */
 	private void enact() throws MsgException {
 		
-		fireRequests();
+		fireConcurrentRequests();
+		
+		//Double numberOfMB = this.responseSize/8388608.0; //8388608 bits = 1MB
 		
 		int pendingRequests= this.nro_requests;
 		while(pendingRequests>0){
@@ -113,7 +134,13 @@ public class Choreographer extends ServiceInvoker {
 			
 			Double startTime = response.requestServed.startTime;
 			Double finishTime = Msg.getClock();
-			Statistics.statsResponseTime.addValue(finishTime-startTime);
+			Double responseTime= finishTime-startTime;
+			//important:
+			ChoreographyMonitor.nextPivot();
+			//Statistics.statsResponseTime.addValue(responseTime);
+			//Statistics.record(numberOfMB.toString(), responseTime.toString());
+			Statistics.record( String.valueOf(ChoreographyMonitor.getCurrentPivot()), responseTime.toString() );
+			
 			//log.record(startTime, finishTime,response.requestServed.toString());
 			//log.record(start, finish,response.serviceMethod);
 			//System.out.println("TR: "+(finish-start));
@@ -127,20 +154,22 @@ public class Choreographer extends ServiceInvoker {
 			pendingRequests--;
 		}
 		
-		//Statistics.recordDescriptiveStatistics(this.nro_requests);
-		String meanResponseTime= String.valueOf( Statistics.statsResponseTime.getMean()) ;
-		String maxResponseTime= String.valueOf( Statistics.statsResponseTime.getMax()) ;
-		String minResponseTime= String.valueOf( Statistics.statsResponseTime.getMin()) ;
-		//Double numberOfMB = this.responseSize/1048576.0; //1048576 Bytes = 1MB
-		Double numberOfMB = this.responseSize/8388608.0; //8388608 bits = 1MB
-		//String varianceResponseTime= String.valueOf( Statistics.statsResponseTime.getVariance()) ;
-		Statistics.recordDescriptiveStatistics( numberOfMB.toString(), String.valueOf(this.responseSize) , meanResponseTime, maxResponseTime, minResponseTime);
-		
-		finalizeAll();
+//		String meanResponseTime= String.valueOf( Statistics.statsResponseTime.getMean()) ;
+//		String maxResponseTime= String.valueOf( Statistics.statsResponseTime.getMax()) ;
+//		String minResponseTime= String.valueOf( Statistics.statsResponseTime.getMin()) ;
+//		String stdResponseTime= String.valueOf( Statistics.statsResponseTime.getStandardDeviation()) ;
 
+		//Double numberOfMB = this.responseSize/8388608.0; //8388608 bits = 1MB
+	
+		//Statistics.recordDescriptiveStatistics( numberOfMB.toString(), String.valueOf(this.responseSize) , meanResponseTime, maxResponseTime, minResponseTime);
+		//Statistics.recordDescriptiveStatistics( String.valueOf(ChoreographyMonitor.getCurrentPivot()), 
+			//	 meanResponseTime, maxResponseTime, minResponseTime, stdResponseTime);
+		//Statistics.recordDescriptiveStatistics( numberOfMB.toString(), meanResponseTime, stdResponseTime );
+		
+		
 	}
 
-	private void fireRequests() throws MsgException {
+	private void fireConcurrentRequests() throws MsgException {
 
 		//sending concurrent requests
 		for (int i = 0; i< this.nro_requests; i++){
@@ -155,6 +184,7 @@ public class Choreographer extends ServiceInvoker {
 			//this.ListStartTimes.add(requestTask.startTime);
 			//this.ListStartTimes.add(System.currentTimeMillis());
 			//System.out.println("StartTime:"+requestTask.startTime);
+			
 			invokeWsMethod(requestTask, myMailbox, entryMailbox);
 		}
 		

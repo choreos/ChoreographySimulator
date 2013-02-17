@@ -27,28 +27,38 @@ public class Simulation {
     int nro_request=1;
     Double responseSize=0.0;
     String dataSetFileName="_";
+    Integer nro_enacts= 1;
 	/* initialize the MSG simulation. Must be done before anything else (even logging). */
 	Msg.init(args);
 
-    if(args.length == 6) {
+    if(args.length >= 6 && args.length <= 7) {
     	platform = args[0];
     	deploymentFile = args[1];
     	specificationFile = args[2];
     	nro_request=Integer.parseInt(args[3]);
     	responseSize=Double.parseDouble(args[4]);
     	dataSetFileName=args[5].trim();
+    	
+    	if(args.length == 7) 
+    		nro_enacts = Integer.parseInt(args[6]);
+    	else 
+    		nro_enacts=1;
     }
     else{
     	Msg.info("Usage   : Simulation platform_file deployment_file");
         Msg.info("example : Simulation comm_time_platform.xml comm_time_deployment.xml");
     }
     
-  //Generating the Choreograpphy model from a specification xml 
+  //Generating the Choreography model from a specification xml 
   	//ChoreographyModel.generateChoreographyMode("smallChoreographySpecification.xml");
-  	ChoreographyModel.generateChoreographyMode(specificationFile);
+  	ChoreographyModel.generateChoreographyModel(specificationFile);
   	ChoreographyMonitor.setNumberRequests(nro_request);
-  	ChoreographyMonitor.setResponseSizeOf("WS1_method1", responseSize) ;
+  	
+  	if(responseSize>0)
+  		ChoreographyMonitor.setResponseSizeOf("WS1_method1", responseSize) ;
+  	
   	ChoreographyMonitor.setDatasetFileName(dataSetFileName);
+  	ChoreographyMonitor.setNumberOfEnacts(nro_enacts);
   	
 	/* construct the platform and deploy the application */
 	Msg.createEnvironment(platform);

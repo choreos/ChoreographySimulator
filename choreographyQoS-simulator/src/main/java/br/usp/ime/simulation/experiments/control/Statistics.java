@@ -34,6 +34,10 @@ public class Statistics {
 		//writing into dataSet 
 		dataSet.record(line );
 	}
+	
+	public static void record( String... extraCols ) {
+		dataSet.record(extraCols);
+	}
 
 	public static void recordDescriptiveStatistics( String... extraCols ) {
 		dataSet.record(extraCols);

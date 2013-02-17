@@ -81,7 +81,7 @@ public class Service extends ServiceInvoker {
 		Task currentTask;
 		while (true) {
 			try {
-				double startTime = Msg.getClock();
+				//double startTime = Msg.getClock();
 				//calculate here a response time
 				currentTask = receiveNewTask();//trying to receive taks
 				if(currentTask== null)

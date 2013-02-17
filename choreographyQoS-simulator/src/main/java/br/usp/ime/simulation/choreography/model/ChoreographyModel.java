@@ -46,7 +46,7 @@ public class ChoreographyModel {
 		roleServices.put(s.getName(), s);
 	}
 
-	public static void generateChoreographyMode(String file){
+	public static void generateChoreographyModel(String file){
 		ChoreographyParser parser= new ChoreographyParser(file);
 		parser.generateChoreographyModel();
 	}

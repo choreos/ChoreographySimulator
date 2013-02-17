@@ -60,6 +60,8 @@ public class Simulation {
   	ChoreographyMonitor.setDatasetFileName(dataSetFileName);
   	ChoreographyMonitor.setNumberOfEnacts(nro_enacts);
   	
+  	ChoreographyMonitor.initialize();
+  	
 	/* construct the platform and deploy the application */
 	Msg.createEnvironment(platform);
 	Msg.deployApplication(deploymentFile);

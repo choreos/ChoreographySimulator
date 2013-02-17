@@ -6,7 +6,7 @@
 
 	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS1"/><!--service name-->
-	    <argument value="-1"/><!-- degradation mean (1/rate) (milliseconds) -->
+	    <argument value="13000"/><!-- degradation mean (1/rate) (milliseconds) -->
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
@@ -31,7 +31,7 @@
 
 	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS3"/><!--service name-->
-	    <argument value="-1"/><!-- degradation mean (1/rate) (milliseconds) -->
+	    <argument value="12500"/><!-- degradation mean (1/rate) (milliseconds) -->
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->
@@ -54,7 +54,7 @@
 
 	    <argument value="50"/><!-- number of threads-->
 	    <argument value="WS5"/><!--service name-->
-	    <argument value="-1"/><!-- degradation mean (1/rate) (milliseconds) -->
+	    <argument value="11500"/><!-- degradation mean (1/rate) (milliseconds) -->
 	    
 	    <argument value="method"/><!--method-->
 		<argument value="method1"/><!-- method name -->

@@ -1,9 +1,13 @@
 package br.usp.ime.simulation.monitoring;
 
+import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 
 import br.usp.ime.simulation.choreography.ChoreographyInstance;
+import br.usp.ime.simulation.log.Log;
 
 
 public class ChoreographyMonitor {//extends Process{
@@ -18,7 +22,26 @@ public class ChoreographyMonitor {//extends Process{
 	private static String datasetFileName="data_default.txt";
 	
 	//for Monitoring
+	private  static int shift; //p
+	private static int currentShift=0;
 	private static int pivot=0;
+	private static int monitoringSampleSize=0;
+	private static Queue currentMonitoringSample;
+	private static Log monitoringLog; 
+
+	public static void initialize() {
+		ViolationDetection.loadContractData("resources/chorsim_RT_contract.txt");
+		monitoringLog= new Log();
+		monitoringLog.open("monitoring.log");
+		monitoringLog.record("pivot", " test  ", " distance ", "    p_plus   ", "    p_minus "	);
+		
+		currentMonitoringSample = new ArrayDeque<Double>();
+		monitoringSampleSize=100;
+		shift=1;
+		currentShift=0;
+		pivot=0;
+		
+	}
 	
 	public  static void addChoreographyInstance(ChoreographyInstance instance){
 		choreographyInstances.put(instance.getCompositionId(), instance);
@@ -82,11 +105,63 @@ public class ChoreographyMonitor {//extends Process{
 		return pivot;
 	}
 
-	public static int nextPivot() {
-		return ++pivot;
+
+	/*
+	 * Violation Detection
+	 */
+	public static void testViolation(double[] samples) {
+		
+		//Boolean test = ViolationDetection.testViolation2(samples);
+		//monitoringLog.record(String.valueOf(pivot), test.toString());
+		
+		DetectionStatistics stat = ViolationDetection.testViolation(samples);
+		monitoringLog.record(String.valueOf(pivot), stat.isGuaranteed().toString(), String.valueOf(stat.getDistance()), 
+				String.valueOf( stat.getpValue_plus()), String.valueOf(stat.getpValue_minus())  );
+		
 	}
 
-	public static void setPivot(int pivot) {
-		ChoreographyMonitor.pivot = pivot;
+	/*
+	 * recordSample
+	 */
+	public static void recordSample(Double responseTime) {
+		currentMonitoringSample.add(responseTime);
+		
+		if(pivot== monitoringSampleSize){//tem data suficiente para realizar a
+			testViolation( toPrimitiveDoubles(currentMonitoringSample)  );
+			currentShift++;
+		}
+		else if(pivot > monitoringSampleSize){
+			if(currentShift==shift){
+				for(int i=0;i<shift;i++)
+					currentMonitoringSample.remove();
+					
+				testViolation( toPrimitiveDoubles( currentMonitoringSample) );
+				currentShift=0;
+			}
+			currentShift++;
+				
+		}
+		else{
+			//nothing
+		}
+		
+		pivot++;
+		
 	}
+
+	
+	private static double[] toPrimitiveDoubles(Collection<Double> samples){
+		double []currentSample=new double[samples.size()];
+		
+		int i=0;
+		for(Double s: samples)
+			currentSample[i++]=s;
+			
+		return currentSample;
+	}
+
+	public static void close() {
+		monitoringLog.close();
+	}
+	
 }

@@ -46,7 +46,6 @@ public abstract class ServiceInvoker extends Process {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private void sendTask(Task request, String sender, String destination,
@@ -64,7 +63,6 @@ public abstract class ServiceInvoker extends Process {
 	
 		WsRequestSender rqs= new WsRequestSender(args, getHost());
 		rqs.start();
-		
 	}
 
 	public abstract void notifyCompletion(WsRequest request,

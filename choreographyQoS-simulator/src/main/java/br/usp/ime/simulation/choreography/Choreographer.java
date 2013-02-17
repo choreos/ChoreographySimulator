@@ -102,8 +102,10 @@ public class Choreographer extends ServiceInvoker {
 	private void simulate() throws MsgException {
 		int nro_enacts=ChoreographyMonitor.getNumberOfEnacts();
 		
-		for(int i=0;i<nro_enacts;i++)
+		for(int i=0;i<nro_enacts;i++){
 			enact();
+			//ChoreographyMonitor.testViolation();
+		}
 		
 		finalizeAll();
 	}
@@ -136,10 +138,12 @@ public class Choreographer extends ServiceInvoker {
 			Double finishTime = Msg.getClock();
 			Double responseTime= finishTime-startTime;
 			//important:
-			ChoreographyMonitor.nextPivot();
+
 			//Statistics.statsResponseTime.addValue(responseTime);
 			//Statistics.record(numberOfMB.toString(), responseTime.toString());
 			Statistics.record( String.valueOf(ChoreographyMonitor.getCurrentPivot()), responseTime.toString() );
+			//ChoreographyMonitor.nextPivot();
+			ChoreographyMonitor.recordSample(responseTime);
 			
 			//log.record(startTime, finishTime,response.requestServed.toString());
 			//log.record(start, finish,response.serviceMethod);
@@ -222,6 +226,8 @@ public class Choreographer extends ServiceInvoker {
 		ServiceRegistry.getInstance().reset();
 		this.log.close();
 		Statistics.closeDataset();
+		
+		ChoreographyMonitor.close();
 	}
 	
 	
